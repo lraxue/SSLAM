@@ -31,7 +31,7 @@ int main() {
     LOG(INFO) << "Number of images: " << nImages;
 
     const std::string path = "/home/feixue/Research/Dataset/Stereo/Adirondack-perfect/";
-    for (int i = 0; i < 10; i += 1)
+    for (int i = 0; i < 100; i += 1)
     {
         LOG(INFO) << "Process Frame: " << i << " ......";
         cv::Mat imLeft = imread(strImagePathPKUDesk + "image_0/" + vstrImageLeft[i], CV_LOAD_IMAGE_GRAYSCALE);

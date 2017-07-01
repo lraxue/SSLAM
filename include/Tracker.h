@@ -40,6 +40,8 @@ namespace SSLAM
 
 
         // Track local map
+        void UpdateLastFrame();
+
         void UpdateLocalKeyFrames();
         void UpdateLocalMapPoints();
         void UpdateLocalMap();

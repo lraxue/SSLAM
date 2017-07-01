@@ -36,6 +36,9 @@ namespace SSLAM
             delete mpTracker;
         if (mpMap)
             delete mpMap;
+
+        if (ptrViewerThread)
+            delete ptrViewerThread;
     }
 
     void ETFSLAM::ProcessStereoImage(const cv::Mat &imLeft, const cv::Mat &imRight)

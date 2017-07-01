@@ -83,6 +83,8 @@ namespace SSLAM
 		unsigned long mnId;
 		static unsigned long mnNext;
 
+        KeyFrame* mpReferenceKF;
+
 		// KeyPoints
 		int N;
 		std::vector<cv::KeyPoint> mvKeysLeft;

@@ -59,8 +59,10 @@ namespace SSLAM
             for (int i = 0, iend = vpKFs.size(); i < iend; ++i)
             {
                 KeyFrame* pKF = vpKFs[i];
-                cv::Mat Twc = pKF->GetPoseInverse().t();
-                LOG(INFO) << "KFs " << pKF->mnId << " pose: " << pKF->GetPose();
+                cv::Mat T = pKF->GetPoseInverse();
+
+                cv::Mat Twc = T.t();
+                LOG(INFO) << "KFs " << pKF->mnId << " pose: " << T;
 
                 glPushMatrix();
 

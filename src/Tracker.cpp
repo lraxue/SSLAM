@@ -11,6 +11,8 @@
 
 #include <glog/logging.h>
 
+using namespace std;
+
 namespace SSLAM
 {
     Tracker::Tracker(FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,Map* pMap):
@@ -84,21 +86,25 @@ namespace SSLAM
     bool Tracker::TrackBasedOnMotionPrediction()
     {
         // Predicted motion
-        mCurrentFrame.SetPose(mLastFrame.mTcw * mVelocity);
+        mCurrentFrame.SetPose(mVelocity * mLastFrame.mTcw );
 
         ORBmatcher matcher(0.8, true);
+        std::fill(mCurrentFrame.mvpMapPoints.begin(), mCurrentFrame.mvpMapPoints.end(), static_cast<MapPoint*>(NULL));
 
-        int nMatchedPoints = matcher.SearchCircleMatchesByProjection(mLastFrame, mCurrentFrame, 7);
+        int th = 7;
+        int nMatchedPoints = matcher.SearchCircleMatchesByProjection(mLastFrame, mCurrentFrame, th);
         LOG(INFO) << "Number of tracked points: " << nMatchedPoints;
+
+        if (nMatchedPoints < 20)
+        {
+            std::fill(mCurrentFrame.mvpMapPoints.begin(), mCurrentFrame.mvpMapPoints.end(), static_cast<MapPoint*>(NULL));
+            nMatchedPoints = matcher.SearchCircleMatchesByProjection(mLastFrame, mCurrentFrame, th * 2);
+        }
 
         LOG(INFO) << "Reprojection error in Frame: " << mCurrentFrame.mnId << " is " << mCurrentFrame.ComputeReprojectionError();
 
-
         // Number of inliers after optimization
         int nInliers = Optimizer::OptimizePose(mCurrentFrame);
-
-        LOG(INFO) << "Number of inliers after optimization: " << nInliers;
-        LOG(INFO) << "Reprojection error in Frame: " << mCurrentFrame.mnId << " is " <<  mCurrentFrame.ComputeReprojectionError();
 
         int nMatchesInMap = 0;
         for (int i = 0; i < mCurrentFrame.N; ++i)
@@ -161,6 +167,10 @@ namespace SSLAM
 //        cv::waitKey(0);
 
         //**************** end of debugging*************
+
+        LOG(INFO) << "Number of inliers after optimization: " << nMatchedPoints;
+        LOG(INFO) << "Reprojection error in Frame: " << mCurrentFrame.mnId << " is " <<  mCurrentFrame.ComputeReprojectionError();
+
         return nMatchesInMap >= 10;
 
     }
@@ -232,6 +242,61 @@ namespace SSLAM
             return false;
         else
             return true;
+    }
+
+    void Tracker::UpdateLastFrame()
+    {
+        KeyFrame* pRef = mLastFrame.mpReferenceKF;
+        mLastFrame.SetPose(mpReferenceKF->GetPose());
+
+        // Create "visual odometry" MapPoints
+        // We sort points according to their measured depth by the stereo/RGB-D sensor
+        vector<pair<float, int> > vDepthIdx;
+        vDepthIdx.reserve(mLastFrame.N);
+        for (int i = 0; i < mLastFrame.N; i++) {
+            float z = mLastFrame.mvDepth[i];
+            if (z > 0) {
+                vDepthIdx.push_back(make_pair(z, i));
+            }
+        }
+
+        if (vDepthIdx.empty())
+            return;
+
+        sort(vDepthIdx.begin(), vDepthIdx.end());
+
+        // We insert all close points (depth<mThDepth)
+        // If less than 100 close points, we insert the 100 closest ones.
+        int nPoints = 0;
+        for (size_t j = 0; j < vDepthIdx.size(); j++) {
+            int i = vDepthIdx[j].second;
+
+            bool bCreateNew = false;
+
+            MapPoint *pMP = mLastFrame.mvpMapPoints[i];
+            if (!pMP)
+                bCreateNew = true;
+            else if (pMP->Observations() < 1) {
+                bCreateNew = true;
+            }
+
+            if (bCreateNew) {
+                cv::Mat x3D = mLastFrame.UnprojectStereo(i);
+                MapPoint *pNewMP = new MapPoint(mLastFrame, i);
+                pNewMP->SetPos(x3D);
+
+                mLastFrame.mvpMapPoints[i] = pNewMP;
+
+//                mlpTemporalPoints.push_back(pNewMP);
+                nPoints++;
+            } else {
+                nPoints++;
+            }
+
+            if (vDepthIdx[j].first > mThDepth && nPoints > 100)
+                break;
+        }
+
     }
 
     void Tracker::UpdateLocalKeyFrames()
