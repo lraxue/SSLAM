@@ -9,6 +9,7 @@
 
 #include <ORBextractor.h>
 #include <MapPoint.h>
+#include <KeyFrame.h>
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
@@ -18,6 +19,7 @@
 namespace SSLAM
 {
     class MapPoint;
+    class KeyFrame;
 
 	class Frame
 	{

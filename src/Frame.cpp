@@ -381,7 +381,9 @@ namespace SSLAM
 			const float x = (u - cx) * z * invfx;
 			const float y = (v - cy) * z * invfy;
 
-			return (cv::Mat_<float>(3, 1) << x, y, z);
+			cv::Mat x3Dc = (cv::Mat_<float>(3, 1) << x, y, z);
+
+			return mRwc * x3Dc + mOw;
 		}
 		else
 			return cv::Mat();
@@ -392,10 +394,11 @@ namespace SSLAM
         if (idx < 0 || idx >= N) return cv::Point2f();   // out of range
         if (!mvpMapPoints[idx]) return cv::Point2f();   // Not exist
 
-        const cv::Mat X3D = mvpMapPoints[idx]->GetPos();
-        const float invz = 1.0 / X3D.at<float>(2);
-        const float x = X3D.at<float>(0);
-        const float y = X3D.at<float>(1);
+        const cv::Mat X3Dw = mvpMapPoints[idx]->GetPos();  // Global pose. Embarrassed!
+        const cv::Mat X3Dc = mRcw * X3Dw + mtcw;           // Camera coordinate. Excited!
+        const float invz = 1.0 / X3Dc.at<float>(2);
+        const float x = X3Dc.at<float>(0);
+        const float y = X3Dc.at<float>(1);
 
         const float u = x * fx * invz + cx;
         const float v = y * fy  * invz + cy;
@@ -408,10 +411,11 @@ namespace SSLAM
         if (idx < 0 || idx >= N) return cv::Point2f();   // out of range
         if (!mvpMapPoints[idx]) return cv::Point2f();   // Not exist
 
-        const cv::Mat X3D = mvpMapPoints[idx]->GetPos();
-        const float invz = 1.0 / X3D.at<float>(2);
-        const float x = X3D.at<float>(0);
-        const float y = X3D.at<float>(1);
+        const cv::Mat X3Dw = mvpMapPoints[idx]->GetPos();  // Global pose. Embarrassed!
+        const cv::Mat X3Dc = mRcw * X3Dw + mtcw;           // Camera coordinate. Excited!
+        const float invz = 1.0 / X3Dc.at<float>(2);
+        const float x = X3Dc.at<float>(0);
+        const float y = X3Dc.at<float>(1);
 
         const float u = x * fx * invz + cx;
         const float v = y * fy  * invz + cy;
@@ -653,7 +657,7 @@ namespace SSLAM
         Monitor::DrawMatchesWithModifiedPosition(rgbLeft, rgbRight, vMatchedKeysLeft,
                                                  vMatchedKeysRight, vMatchedKeysRightModifiied, modifiedImg);
         cv::imshow("modified img " + to_string(mnId), modifiedImg);
-//		cv::imwrite(tag + "modified image.png", modifiedImg);
+		cv::imwrite(tag + "modified image.png", modifiedImg);
 
         cv::waitKey(0);
 

@@ -33,10 +33,14 @@ namespace SSLAM
         std::vector<MapPoint*> GetAllMapPoints();
         void EraseMapPoint(MapPoint* pMP);
 
+        int GetMapPointsInMap();
+
         // KeyFrame processor
         void AddKeyFrame(KeyFrame* pKF);
         std::vector<KeyFrame*> GetAllKeyFrames();
         void EraseKeyFrame(KeyFrame* pKF);
+
+        int GetKeyFramesInMap();
 
 
     protected:

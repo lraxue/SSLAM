@@ -11,7 +11,11 @@ namespace SSLAM
     FrameDrawer::FrameDrawer(Map *pMap) : mpMap(pMap)
     {
 
-        mIm = cv::Mat(720, 1280, CV_8UC3, cv::Scalar(0, 0, 0));
+        mnImgWidth = GlobalParameters::mImageWidth;
+        mnImgHeight = GlobalParameters::mImageHeight;
+
+        // For stereo image
+        mIm = cv::Mat(mnImgHeight, mnImgWidth * 2, CV_8UC3, cv::Scalar(0, 0, 0));
     }
 
     FrameDrawer::~FrameDrawer()
@@ -29,7 +33,6 @@ namespace SSLAM
 
         std::vector<int> vMatches;
         std::vector<bool> vbMap;
-
         {
             std::unique_lock<std::mutex> lock(mMutex);
 
@@ -59,16 +62,16 @@ namespace SSLAM
             pt1 = vKeysLeft[i].pt;
             pt2 = vKeysRight[i].pt;
 
-            // pt2.x += w;
+            pt2.x += mnImgWidth;
 
             pt3 = vProjectedKeysLeft[i];
             pt4 = vProjectedKeysRight[i];
-            // pt4.x += w;
+            pt4.x += mnImgWidth;
 
             if (vbMap[i])
             {
-                cv::circle(im, pt1, 5, cv::Scalar(0, 0, 255), 2);
-                cv::circle(im, pt2, 5, cv::Scalar(0, 0, 255), 2);
+                cv::circle(im, pt1, 5, cv::Scalar(255, 0, 0), 2);
+                cv::circle(im, pt2, 5, cv::Scalar(255, 0, 0), 2);
                 cv::line(im, pt1, pt2, cv::Scalar(0, 0, 255), 2);
                 mnTrackedMap++;
             }
@@ -102,10 +105,10 @@ namespace SSLAM
     {
         std::stringstream ss;
 
-        int nKFs = 0; // mpMap->GetKeyFranesInMap();
-        int nMPs = 0; // mpMap->GetMapPointsInMap();
+        int nKFs = mpMap->GetKeyFramesInMap();
+        int nMPs = mpMap->GetMapPointsInMap();
 
-        ss << "nFs: " << nKFs << ", Global MPs: " << mnTrackedMap << ", Temporal MPs: " << mnTrackedVO;
+        ss << "nFs: " << nKFs << ", Global MPs: " << mnTrackedMap << ", Temporal MPs: " << mnTrackedVO << ", Total MPs: " << nMPs;
 
         int baseline = 0;
         cv::Size textSize = cv::getTextSize(ss.str(), cv::FONT_HERSHEY_PLAIN, 1, 1, &baseline);
@@ -124,7 +127,8 @@ namespace SSLAM
         mnFrameId = frame.mnId;
         int nF = frame.N;
 
-        frame.mRGBLeft.copyTo(mIm);
+        frame.mRGBLeft.copyTo(mIm.rowRange(0, mnImgHeight).colRange(0, mnImgWidth));
+        frame.mRGBRight.copyTo(mIm.rowRange(0, mnImgHeight).colRange(mnImgWidth, mIm.cols));
 
         const std::vector<int>& vMatches = frame.mvMatches;
         mvCurrentKeysLeft.clear();

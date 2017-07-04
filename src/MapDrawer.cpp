@@ -33,7 +33,7 @@ namespace SSLAM
 
         glPointSize(mPointSize);
         glBegin(GL_POINTS);
-        glColor3f(0.0, 0.0, 0.0);
+        glColor3f(1.0, 0.0, 0.0); // RGB
 
         for (int i = 0, iend = vpMPs.size(); i < iend; ++i)
         {

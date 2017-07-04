@@ -28,9 +28,13 @@ namespace SSLAM
 
         ~ETFSLAM();
 
+
     public:
         void ProcessStereoImage(const cv::Mat& imLeft, const cv::Mat& imRight);
 
+        void Shutdown();
+
+    public:
         Tracker* mpTracker;
 
         FrameDrawer* mpFrameDrawer;

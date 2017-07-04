@@ -43,6 +43,12 @@ namespace SSLAM
         mspMapPoints.erase(pMP);
     }
 
+    int Map::GetMapPointsInMap()
+    {
+        std::unique_lock<std::mutex> lock(mMutexMap);
+        return mspMapPoints.size();
+    }
+
     //***********************************Map***********************************//
     void Map::AddKeyFrame(KeyFrame *pKF)
     {
@@ -66,6 +72,12 @@ namespace SSLAM
         if (!mspKeyFrames.count(pKF)) return;
 
         mspKeyFrames.erase(pKF);
+    }
+
+    int Map::GetKeyFramesInMap()
+    {
+        std::unique_lock<std::mutex> lock(mMutexMap);
+        return mspKeyFrames.size();
     }
 
 

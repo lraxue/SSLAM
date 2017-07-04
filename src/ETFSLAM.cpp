@@ -25,24 +25,42 @@ namespace SSLAM
 
     ETFSLAM::~ETFSLAM()
     {
-        if (mpViewer)
-            delete mpViewer;
-        if (mpMapDrawer)
-            delete mpMapDrawer;
-        if (mpFrameDrawer)
-            delete mpFrameDrawer;
+//        if (ptrViewerThread)
+//            delete ptrViewerThread;
+//        if (mpMapDrawer)
+//            delete mpMapDrawer;
+//        if (mpFrameDrawer)
+//            delete mpFrameDrawer;
+//
+//        if (mpViewer)
+//            delete mpViewer;
+//
+//        if (mpMap)
+//            delete mpMap;
+//
+//        if (mpTracker)
+//            delete mpTracker;
 
-        if (mpTracker)
-            delete mpTracker;
-        if (mpMap)
-            delete mpMap;
 
-        if (ptrViewerThread)
-            delete ptrViewerThread;
     }
 
     void ETFSLAM::ProcessStereoImage(const cv::Mat &imLeft, const cv::Mat &imRight)
     {
         mpTracker->GrabStereo(imLeft, imRight);
+    }
+
+    void ETFSLAM::Shutdown()
+    {
+        if (mpViewer)
+        {
+            mpViewer->RequestFinish();
+            while (!mpViewer->isFinish())
+            {
+                usleep(5000);
+            }
+        }
+
+        if (mpViewer)
+            pangolin::BindToContext("SSLAM: Map Viewer");
     }
 }

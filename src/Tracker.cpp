@@ -398,6 +398,7 @@ namespace SSLAM
         KeyFrame* pNewKF = new KeyFrame(mCurrentFrame, mpMap);
         mpMap->AddKeyFrame(pNewKF);
 
+
         mpReferenceKF = pNewKF;
 
         int nPoints = 0;
@@ -418,7 +419,7 @@ namespace SSLAM
         for (int j = 0; j < vDepthIdx.size(); ++j)
         {
             int i = vDepthIdx[j].second;
-            bool bCreateNew = true;
+            bool bCreateNew = false;
 
             MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
 
@@ -426,6 +427,11 @@ namespace SSLAM
 
             if (!pMP)
                 bCreateNew = true;
+                else if (pMP->Observations() < 1)
+            {
+                bCreateNew = true;
+                mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
+            }
             else
                 nPoints++;
 
@@ -436,20 +442,21 @@ namespace SSLAM
                 pNewMP->mpRefKF = pNewKF;
                 pNewMP->SetPos(X3D);
 
-                mCurrentFrame.mvpMapPoints[i] = pNewMP;
                 pNewKF->AddMapPoint(pNewMP, i);
                 pNewMP->AddObservation(pNewKF, i);
                 pNewMP->ComputeDistinctiveDescriptors();
                 pNewMP->UpdateNormalAndDepth();
 
-                mpMap->AddMapPoint(pNewMP);
+                 mpMap->AddMapPoint(pNewMP);
+
+                mCurrentFrame.mvpMapPoints[i] = pNewMP;
 
                 nNewCreatedMapPoints++;
 
                 nPoints++;
             }
 
-            if (nPoints > 300) break;
+//            if (nPoints > 300) break;
         }
 
         LOG(INFO) << "Create new KeyFrame: " << pNewKF->mnId << " based on Frame:" << mCurrentFrame.mnId;

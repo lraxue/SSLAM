@@ -82,8 +82,8 @@ namespace SSLAM
 //
 //        LOG(INFO) << "mTcw: " << mTcw;
 
-        mRcw = (mTcw.rowRange(0, 3).colRange(0, 3)).clone();
-        mtcw = (mTcw.rowRange(0, 3).col(3)).clone();
+        mRcw = mTcw.rowRange(0, 3).colRange(0, 3);
+        mtcw = mTcw.rowRange(0, 3).col(3);
 
         mOw = -mRcw.t() * mtcw;
 

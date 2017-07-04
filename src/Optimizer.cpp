@@ -5,6 +5,8 @@
 #include <Optimizer.h>
 #include <Converter.h>
 
+#include <ExtendedG2O.h>
+
 #include <Thirdparty/g2o/g2o/core/block_solver.h>
 #include <Thirdparty/g2o/g2o/core/optimization_algorithm_levenberg.h>
 #include <Thirdparty/g2o/g2o/solvers/linear_solver_dense.h>
@@ -593,5 +595,83 @@ namespace SSLAM
 
 
     }
+
+
+    //**********************************Pose optimization on 3D points**************************//
+    int Optimizer::PoseOptimizationOn3DPoints(Frame *pFrame)
+    {
+        int nInliers = 0;
+
+        g2o::SparseOptimizer optimizer;
+        g2o::BlockSolver_6_3::LinearSolverType* linearSolver;
+        linearSolver = new g2o::LinearSolverDense<g2o::BlockSolver_6_3::PoseMatrixType>();
+
+        g2o::BlockSolver_6_3 *solver_ptr = new g2o::BlockSolver_6_3(linearSolver);
+
+        g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+        optimizer.setAlgorithm(solver);
+
+        int nInitialCorrespondences = 0;
+
+        // Set Frame vertex
+        g2o::VertexSE3Expmap* vSE3 = new g2o::VertexSE3Expmap();
+        vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
+        vSE3->setId(0);
+        vSE3->setFixed(false);
+        optimizer.addVertex(vSE3);
+
+
+        return nInliers;
+    }
+
+    int static Optimizer::ICP(const std::vector<cv::Point3f> &vPoints1, const std::vector<cv::Point3f> &vPoints2,
+                              cv::Mat &R, cv::Mat &t, std::vector<bool> &vInliers)
+    {
+        g2o::SparseOptimizer optimizer;
+        g2o::BlockSolver_6_3::LinearSolverType* linearSolver =
+                new g2o::LinearSolverEigen<g2o::BlockSolver_6_3::PoseMatrixType>();
+
+        g2o::BlockSolver_6_3* solver_ptr = new g2o::BlockSolver_6_3(linearSolver);
+        g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+        optimizer.setAlgorithm(solver);
+
+        // vertex
+        cv::Mat T = cv::Mat::eye(4, 4, CV_32F);
+        g2o::VertexSE3Expmap* pose = new g2o::VertexSE3Expmap(); // camera pose
+        pose->setId(0);
+        pose->setEstimate(Converter::toSE3Quat(T));
+        optimizer.addVertex(pose);
+
+        // edges
+        int index = 1;
+        std::vector<EdgeProjectRGBDPoseOnly*> edges;
+
+        for (int i = 0; i < vPoints1.size(); ++i)
+        {
+            EdgeProjectRGBDPoseOnly* edge = new EdgeProjectRGBDPoseOnly(
+                    Eigen::Vector3d(vPoints2[i].x, vPoints2[i].y, vPoints2[i].z));
+
+            edge->setId(i + 1);
+            edge->setVertex(0, dynamic_cast<g2o::VertexSE3Expmap*>(pose));
+            edge->setMeasurement(Eigen::Vector3d(vPoints1[i].x, vPoints1[i].y, vPoints1[i].z));
+            edge->setInformation(Eigen::Matrix3d::Identity() * 1e4);
+
+            optimizer.addEdge(edge);
+            edges.push_back(edge);
+        }
+
+        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+        optimizer.setVerbose(true);
+        optimizer.initializeOptimization();
+        optimizer.optimize(10);
+
+        std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+        std::chrono::duration<double> time_used = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+        LOG(INFO)<< "optimization costs time: " << time_used.count() << " seconds.";
+
+        g2o::SE3Quat SE3quat_recov = pose->estimate();
+        cv::Mat T_recov = Converter::toCvMat(SE3quat_recov);
+    }
+
 }
 

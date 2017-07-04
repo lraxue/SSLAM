@@ -48,6 +48,9 @@ namespace SSLAM
 
         unsigned long mnFrameId;
 
+        int mnImgWidth;
+        int mnImgHeight;
+
         std::mutex mMutex;
 
     };

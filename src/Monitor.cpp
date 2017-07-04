@@ -191,11 +191,14 @@ namespace SSLAM
             p2.x += w;
             p3.x += w;
 
+//            if (p1.y < 50 || p1. y > 500)
+//                continue;
+
             cv::circle(out, p1, CIRCLE_RADIUS, cv::Scalar(0, 0, 255), CIRCLE_THICKNESS);
             cv::circle(out, p2, CIRCLE_RADIUS, cv::Scalar(0, 0, 255), CIRCLE_THICKNESS);
-            cv::circle(out, p3, CIRCLE_RADIUS, cv::Scalar(255, 0, 0), CIRCLE_THICKNESS);
+//            cv::circle(out, p3, CIRCLE_RADIUS, cv::Scalar(255, 0, 0), CIRCLE_THICKNESS);
 
-            cv::line(out, p1, p3, cv::Scalar(0, 255, 0), LINE_THICKNESS);
+            cv::line(out, p1, p2, cv::Scalar(0, 255, 0), LINE_THICKNESS);
         }
     }
 
