@@ -14,8 +14,8 @@ namespace SSLAM
     public:
         // Constructor functions
         EpipolarTriangle();
-        EpipolarTriangle(const cv::Mat& normal, const float& d);
-        EpipolarTriangle(const cv::Point3f& p1, const cv::Point3f& p2, const cv::Point3f& p3);
+        EpipolarTriangle(const unsigned long& frameId, const cv::Mat& normal, const float& d);
+        EpipolarTriangle(const unsigned long& frameId, const cv::Mat& X, const cv::Mat& Cl, const cv::Mat& Cr);
 
         ~EpipolarTriangle();
 
@@ -24,7 +24,7 @@ namespace SSLAM
 
         cv::Mat GetRawNormal() const;
 
-        float GetDistance() const ;
+        float GetDistance() const;
 
         float GetRawDistance() const;
 
@@ -48,11 +48,29 @@ namespace SSLAM
          */
         float ComputeDistanceToVertex(const cv::Mat& x3Dw, const int& idx = 0);
 
+        // Get three angles of the triangle
+        float Angle1() const;
+        float Angle2() const;
+        float Angle3() const;
+
+    protected:
+        /**
+         * Compute three inner angles, as the structure of the triangle
+         */
+        void ComputeThreeAngles();
+
+
     public:
         unsigned long mnId;
         static unsigned long mnNext;
 
+        // Id of the Frame that creating this ETriangle
+        unsigned long mnFrameId;
+
     protected:
+        // Attributes
+        float mAngle1, mAngle2, mAngle3;  // Three angles: top-left-right
+
         // Parameters after transformation
         cv::Mat mNormal;
         float mD;

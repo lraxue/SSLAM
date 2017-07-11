@@ -10,6 +10,7 @@
 #include <ORBextractor.h>
 #include <MapPoint.h>
 #include <KeyFrame.h>
+#include <EpipolarTriangle.h>
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
@@ -20,6 +21,7 @@ namespace SSLAM
 {
     class MapPoint;
     class KeyFrame;
+	class EpipolarTriangle;
 
 	class Frame
 	{
@@ -49,6 +51,8 @@ namespace SSLAM
 
         // Un-project 2D points to 3D space based on the pose of Frame
 		cv::Mat UnprojectStereo(const int& idx);
+
+		EpipolarTriangle* GenerateEpipolarTriangle(const int& idx) const;
 
         // Project corresponded point to 2D image
         cv::Point2f Project3DPointOnLeftImage(const int& idx) const;
@@ -101,7 +105,11 @@ namespace SSLAM
 		std::vector<float> mvDepth;
 		std::vector<bool> mvbOutliers;
 
+		// Corresponded MapPoints
         std::vector<MapPoint*> mvpMapPoints;
+
+		// Corresponded EpipolarTriangles
+		std::vector<EpipolarTriangle*> mvpTriangles;
 
 		int mnScaleLevels;
 		float mfScaleFactor;

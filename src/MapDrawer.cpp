@@ -62,7 +62,7 @@ namespace SSLAM
                 cv::Mat T = pKF->GetPoseInverse();
 
                 cv::Mat Twc = T.t();
-                LOG(INFO) << "KFs " << pKF->mnId << " pose: " << T;
+//                LOG(INFO) << "KFs " << pKF->mnId << " pose: " << T;
 
                 glPushMatrix();
 
@@ -97,6 +97,40 @@ namespace SSLAM
 
             }
         }
+
+        bool bDrawGraph = true;
+        if (bDrawGraph)
+        {
+            glLineWidth(mGraphLineWidth);
+            glColor4f(1.0f, 0.0f, 0.0f, 0.6f);
+            glBegin(GL_LINES);
+
+            for (int i = 0, iend = vpKFs.size(); i < iend; ++i)
+            {
+                // Covisible graph
+                const std::vector<KeyFrame*> vCovKFs = vpKFs[i]->GetCovisibilityKeyFramesByWeight(10);
+                cv::Mat Ow = vpKFs[i]->GetCameraCenter();
+
+                LOG(INFO) << "KeyFrame: " << vpKFs[i]->mnId << " with " << vCovKFs.size() << " neighbors.";
+
+                if (!vCovKFs.empty())
+                {
+                    for (auto pKFi : vCovKFs)
+                    {
+                        if (pKFi->mnId < vpKFs[i]->mnId)
+                            continue;
+
+                        cv::Mat Ow2 = pKFi->GetCameraCenter();
+                        glVertex3f(Ow.at<float>(0), Ow.at<float>(1), Ow.at<float>(2));
+                        glVertex3f(Ow2.at<float>(0), Ow2.at<float>(1), Ow2.at<float>(2));
+
+                    }
+                }
+            }
+
+            glEnd();
+        }
+
     }
 
     void MapDrawer::DrawCurrentCamera(pangolin::OpenGlMatrix &Twc)

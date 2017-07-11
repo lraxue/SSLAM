@@ -11,6 +11,7 @@
 #include <KeyFrame.h>
 #include <FrameDrawer.h>
 #include <MapDrawer.h>
+#include <LocalMapper.h>
 
 namespace SSLAM
 {
@@ -25,7 +26,7 @@ namespace SSLAM
             LOST = 0,
         };
     public:
-        Tracker(FrameDrawer* pFrameDrawer, MapDrawer *pMapDrawer, Map* pMap);
+        Tracker(FrameDrawer* pFrameDrawer, MapDrawer *pMapDrawer, LocalMapper* pLocalMapper, Map* pMap);
         ~Tracker();
 
     public:
@@ -68,6 +69,7 @@ namespace SSLAM
 
         FrameDrawer* mpFrameDrawer;
         MapDrawer* mpMapDrawer;
+        LocalMapper* mpLocalMapper;
 
         KeyFrame* mpReferenceKF;
 

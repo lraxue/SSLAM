@@ -15,7 +15,7 @@
 
 
 // Extended G2O
-class EdgeProjectRGBDPoseOnly : public g2o::BaseEdge<3, Eigen::Vector3d, g2o::VertexSE3Expmap>
+class EdgeProjectRGBDPoseOnly : public g2o::BaseUnaryEdge<3, Eigen::Vector3d, g2o::VertexSE3Expmap>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
@@ -61,8 +61,8 @@ public:
         _jacobianOplusXi(2, 5) = -1;
     }
 
-    bool read(istream & in){}
-    bool write(ostream& out) const {};
+    bool read(std::istream & in){}
+    bool write(std::ostream& out) const {};
 
 protected:
     Eigen::Vector3d _point;

@@ -7,16 +7,21 @@
 
 #include <Frame.h>
 #include <KeyFrame.h>
+#include <EpipolarTriangle.h>
+
 #include <opencv2/opencv.hpp>
 
 namespace SSLAM
 {
     class Frame;
     class KeyFrame;
+    class Map;
+    class EpipolarTriangle;
+
     class MapPoint
     {
     public:
-        MapPoint(const Frame& frame, const int& idx);
+        MapPoint(Map* pMap, const Frame& frame, const int& idx);
         ~MapPoint();
 
     public:
@@ -31,8 +36,16 @@ namespace SSLAM
         void EraseObservation(KeyFrame* pKF);
         std::map<KeyFrame*, int> GetAllObservations() const;
         int GetIndexInKeyFrame(KeyFrame* pKF);
-
         int Observations();
+
+        // Triangles
+        void AddTriangle(EpipolarTriangle* pTriangle);
+        void EraseTriangle(EpipolarTriangle* pTriangle);
+        std::vector<EpipolarTriangle*> GetAllTriangles() const;
+        EpipolarTriangle* GetLastEpipolarTriangle();
+        EpipolarTriangle* GetFirstEpipolarTriangle();
+        int Triangles();
+
 
 
         void AddFounder(const unsigned long& frameID, const int& idx);
@@ -55,6 +68,15 @@ namespace SSLAM
 
         bool IsBad();
 
+        bool IsInKeyFrame(KeyFrame* pKF) const;
+
+        static bool lId(MapPoint* pMP1, MapPoint* pMP2)
+        {
+            return pMP1->mnId < pMP2->mnId;
+        }
+
+        // Replace
+        void Replace(MapPoint* pMP);
 
     public:
         unsigned long mnId;
@@ -62,6 +84,7 @@ namespace SSLAM
 
         int nObs;
         KeyFrame* mpRefKF;
+        MapPoint* mpReplaced;
 
         // Tags for bundle adjustment
         unsigned long mnLocalBAForKF;
@@ -77,6 +100,7 @@ namespace SSLAM
         // Tags for tracking
         unsigned long mnTrackLocalMapForFrame;
         unsigned long mnLastFrameSeen;
+        unsigned long mnFuseMapPointForKF;
 
     protected:
         // MapPoint Id
@@ -94,11 +118,17 @@ namespace SSLAM
         std::map<unsigned long, int> mFeatureFlow;
         std::map<KeyFrame*, int> mObservations;
 
+        // Triangle flow along time line
+        std::list<EpipolarTriangle*> mlpTriangles;
+
         cv::Mat mNormalVector;
 
         // Scale invariance distance
         float mfMinDistance;
         float mfMaxDistance;
+
+        // Global Map
+        Map* mpMap;
 
 
     };

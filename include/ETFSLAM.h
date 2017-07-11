@@ -9,6 +9,7 @@
 #include <Frame.h>
 #include <Viewer.h>
 #include <Map.h>
+#include <LocalMapper.h>
 
 #include <GlobalParameters.h>
 
@@ -34,6 +35,14 @@ namespace SSLAM
 
         void Shutdown();
 
+        void SaveTrajectoryKITTI(const std::string& strTrajectoryFile);
+
+    public:
+        /// Debugging functions
+        void SaveAngleCorrespondedToOneMapPoint(const std::string& strAngleFile);
+
+        /// Debugging functions
+
     public:
         Tracker* mpTracker;
 
@@ -41,6 +50,7 @@ namespace SSLAM
         MapDrawer* mpMapDrawer;
 
         Viewer* mpViewer;
+        LocalMapper* mpLocalMapper;
 
         Map* mpMap;
 

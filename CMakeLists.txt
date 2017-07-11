@@ -57,7 +57,7 @@ include_directories(
 
 add_executable(${PROJECT_NAME}
         src/Monitor.cpp
-        src/main.cpp
+        src/Main.cpp
         src/GlobalParameters.cpp
         src/ORBextractor.cpp
         src/ORBmatcher.cpp
@@ -67,7 +67,14 @@ add_executable(${PROJECT_NAME}
         src/Map.cpp
         src/Tracker.cpp
         src/Optimizer.cpp
-        src/Converter.cpp src/KeyFrame.cpp src/EpipolarTriangle.cpp src/FrameDrawer.cpp src/MapDrawer.cpp src/Viewer.cpp src/ETFSLAM.cpp)
+        src/Converter.cpp
+        src/KeyFrame.cpp
+        src/EpipolarTriangle.cpp
+        src/FrameDrawer.cpp
+        src/MapDrawer.cpp
+        src/Viewer.cpp
+        src/ETFSLAM.cpp
+        src/TestTriangleForMatching.cpp src/LocalMapper.cpp)
 
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}

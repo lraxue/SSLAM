@@ -63,6 +63,7 @@ namespace SSLAM
 		cx = fs["Camera.cx"];
 		cy = fs["Camera.cy"];
 		mbf = fs["Camera.bf"];
+		mb = mbf / fx;
 
 		fps = fs["Camera.fps"];
 

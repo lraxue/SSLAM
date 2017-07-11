@@ -49,6 +49,7 @@ namespace SSLAM
     Frame::Frame(const Frame &frame) :
             mnId(frame.mnId), N(frame.N), mLeft(frame.mLeft.clone()), mRight(frame.mRight.clone()),
             mvKeysLeft(frame.mvKeysLeft), mvMatches(frame.mvMatches), mvpMapPoints(frame.mvpMapPoints),
+			mvpTriangles(frame.mvpTriangles),
             mvKeysRight(frame.mvKeysRight), mvKeysRightWithSubPixel(frame.mvKeysRightWithSubPixel),
             mDescriptorsLeft(frame.mDescriptorsLeft.clone()), mDescriptorsRight(frame.mDescriptorsRight.clone()),
             mvDepth(frame.mvDepth), mvuRight(frame.mvuRight),mvbOutliers(frame.mvbOutliers),
@@ -126,6 +127,7 @@ namespace SSLAM
         // Initialization before processing
 		mvbOutliers.resize(N, false);
         mvpMapPoints.resize(N, static_cast<MapPoint*>(NULL));
+		mvpTriangles.resize(N, static_cast<EpipolarTriangle*>(NULL));
 
 		ComputeStereoMatches();
 
@@ -389,10 +391,32 @@ namespace SSLAM
 			return cv::Mat();
 	}
 
+	EpipolarTriangle* Frame::GenerateEpipolarTriangle(const int &idx) const
+    {
+        if (idx < 0 || idx >= N)   // out of range
+            return static_cast<EpipolarTriangle*>(NULL);
+
+        cv::Mat Cl = (cv::Mat_<float>(3, 1) << 0.f, 0.f, 0.f);
+        cv::Mat Cr = (cv::Mat_<float>(3, 1) << mb, 0.f, 0.f);
+
+        const float z = mvDepth[idx];
+        const float u = mvKeysLeft[idx].pt.x;
+        const float v = mvKeysLeft[idx].pt.y;
+
+        const float x = (u - cx) * z * invfx;
+        const float y = (v - cy) * z * invfy;
+
+        cv::Mat x3Dc = (cv::Mat_<float>(3, 1) << x, y, z);
+
+        EpipolarTriangle* pNewET = new EpipolarTriangle(mnId, x3Dc, Cl, Cr);   // EpipolarTriangle in current camera coordinate
+
+        return pNewET;
+    }
+
     cv::Point2f Frame::Project3DPointOnLeftImage(const int &idx) const
     {
         if (idx < 0 || idx >= N) return cv::Point2f();   // out of range
-        if (!mvpMapPoints[idx]) return cv::Point2f();   // Not exist
+        if (!mvpMapPoints[idx]) return cv::Point2f();    // Not exist
 
         const cv::Mat X3Dw = mvpMapPoints[idx]->GetPos();  // Global pose. Embarrassed!
         const cv::Mat X3Dc = mRcw * X3Dw + mtcw;           // Camera coordinate. Excited!

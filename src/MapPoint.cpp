@@ -9,7 +9,10 @@
 namespace SSLAM
 {
     unsigned long MapPoint::mnNext = 0;
-    MapPoint::MapPoint(const Frame &frame, const int &idx):mnLastFrameSeen(0), mnTrackLocalMapForFrame(0), nObs(0)
+    MapPoint::MapPoint(Map* pMap, const Frame &frame, const int &idx):
+            mpMap(pMap), mnLastFrameSeen(0),
+            mnTrackLocalMapForFrame(0), mbBad(false),
+            mnFuseMapPointForKF(0), nObs(0)
     {
         mnId = mnNext++;
         mFeatureFlow[frame.mnId] = idx;
@@ -44,6 +47,9 @@ namespace SSLAM
 
     void MapPoint::AddObservation(KeyFrame *pKF, const int &idx)
     {
+        if (mObservations.count(pKF))
+            return;
+
         mObservations[pKF] = idx;
         nObs += 2;
     }
@@ -79,6 +85,61 @@ namespace SSLAM
     {
         return nObs;
     }
+
+
+    /****************************** Epipolar Triangle *********************/
+
+    void MapPoint::AddTriangle(EpipolarTriangle *pTriangle)
+    {
+        if (!pTriangle)
+            return;
+
+        // Find if pTriangle exists
+        std::list<EpipolarTriangle*>::iterator it = std::find(mlpTriangles.begin(), mlpTriangles.end(), pTriangle);
+        if (it == mlpTriangles.end())
+            mlpTriangles.push_back(pTriangle);
+        else
+            return;
+
+//        LOG(INFO) << "MapPoint: " << mnId << " with " << mlpTriangles.size() << " triangles.";
+    }
+
+    void MapPoint::EraseTriangle(EpipolarTriangle *pTriangle)
+    {
+        if (!pTriangle)
+            return;
+
+        mlpTriangles.remove(pTriangle);
+    }
+
+    std::vector<EpipolarTriangle*> MapPoint::GetAllTriangles() const
+    {
+        // Return all related Triangles along the time line
+        return std::vector<EpipolarTriangle*>(mlpTriangles.begin(), mlpTriangles.end());
+    }
+
+    EpipolarTriangle* MapPoint::GetLastEpipolarTriangle()
+    {
+        if (mlpTriangles.empty())
+            return static_cast<EpipolarTriangle*>(NULL);
+        else
+            return mlpTriangles.back();
+    }
+
+    EpipolarTriangle* MapPoint::GetFirstEpipolarTriangle()
+    {
+        if (mlpTriangles.empty())
+            return static_cast<EpipolarTriangle*>(NULL);
+        else
+            return mlpTriangles.front();
+    }
+
+    int MapPoint::Triangles()
+    {
+        // Return number of EpipolarTriangles associated to this MapPoint
+        return mlpTriangles.size();
+    }
+
 
     cv::Mat MapPoint::GetNormal()
     {
@@ -226,6 +287,42 @@ namespace SSLAM
     bool MapPoint::IsBad()
     {
         return mbBad;
+    }
+
+    bool MapPoint::IsInKeyFrame(KeyFrame *pKF) const
+    {
+        return (mObservations.count(pKF));
+    }
+
+    void MapPoint::Replace(MapPoint *pMP)
+    {
+        if (pMP->mnId == mnId)   // The same MapPoint
+            return;
+
+        int nvisible, nfound;
+        std::map<KeyFrame*, int> obs;
+        obs = mObservations;
+        mObservations.clear();
+        mbBad = true;
+
+        mpReplaced = pMP;
+
+        for (auto mit : obs)
+        {
+            KeyFrame* pKF = mit.first;
+            if (!pMP->IsInKeyFrame(pKF))
+            {
+                pKF->ReplaceMapPoint(mit.second, pMP);
+                pMP->AddObservation(pKF, mit.second);
+            }
+            else
+            {
+                pKF->EraseMapPointByIndex(mit.second);
+            }
+        }
+
+        pMP->ComputeDistinctiveDescriptors();
+        mpMap->EraseMapPoint(this);
     }
 
 

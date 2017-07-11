@@ -5,6 +5,7 @@
 #include <Tracker.h>
 #include <ORBmatcher.h>
 #include <Optimizer.h>
+#include <EpipolarTriangle.h>
 #include <Monitor.h>
 #include <GlobalParameters.h>
 
@@ -15,9 +16,9 @@ using namespace std;
 
 namespace SSLAM
 {
-    Tracker::Tracker(FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,Map* pMap):
+    Tracker::Tracker(FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, LocalMapper* pLocalMapper, Map* pMap):
             mpMap(pMap), mpFrameDrawer(pFrameDrawer),
-            mpMapDrawer(pMapDrawer),
+            mpMapDrawer(pMapDrawer), mpLocalMapper(pLocalMapper),
             mState(NOT_INITIALIZED)
     {
 
@@ -35,6 +36,15 @@ namespace SSLAM
         mCurrentFrame = Frame(imLeft, imRight);
 
         Track();
+
+        std::vector<MapPoint*> allMapPoints = mpMap->GetAllMapPoints();
+
+        sort(allMapPoints.begin(), allMapPoints.end(), MapPoint::lId);
+
+        for (auto pMP : allMapPoints)
+        {
+            LOG(INFO) << "MapPoint: " << pMP->mnId << " with observations " << pMP->Observations();
+        }
 
         return mCurrentFrame.mTcw;
     }
@@ -122,7 +132,9 @@ namespace SSLAM
                     nMatchedPoints--;
                 }
                 else if (mCurrentFrame.mvpMapPoints[i]->Observations() > 0)
+                {
                     nMatchesInMap++;
+                }
             }
         }
 
@@ -282,7 +294,7 @@ namespace SSLAM
 
             if (bCreateNew) {
                 cv::Mat x3D = mLastFrame.UnprojectStereo(i);
-                MapPoint *pNewMP = new MapPoint(mLastFrame, i);
+                MapPoint *pNewMP = new MapPoint(mpMap, mLastFrame, i);
                 pNewMP->SetPos(x3D);
 
                 mLastFrame.mvpMapPoints[i] = pNewMP;
@@ -296,7 +308,6 @@ namespace SSLAM
             if (vDepthIdx[j].first > mThDepth && nPoints > 100)
                 break;
         }
-
     }
 
     void Tracker::UpdateLocalKeyFrames()
@@ -342,6 +353,11 @@ namespace SSLAM
             for (std::vector<MapPoint*>::const_iterator vitMP = vpMPs.begin(), vendMP = vpMPs.end(); vitMP != vendMP; vitMP++)
             {
                 MapPoint* pMP = *vitMP;
+                if (!pMP)
+                    continue;
+                if (pMP->IsBad())
+                    continue;
+
                 if (pMP->mnTrackLocalMapForFrame == mCurrentFrame.mnId)
                     continue;
 
@@ -396,7 +412,7 @@ namespace SSLAM
     void Tracker::CreateNewKeyFrame()
     {
         KeyFrame* pNewKF = new KeyFrame(mCurrentFrame, mpMap);
-        mpMap->AddKeyFrame(pNewKF);
+//        mpMap->AddKeyFrame(pNewKF);
 
 
         mpReferenceKF = pNewKF;
@@ -416,6 +432,7 @@ namespace SSLAM
         std::sort(vDepthIdx.begin(), vDepthIdx.end());
 
         int nNewCreatedMapPoints = 0;
+
         for (int j = 0; j < vDepthIdx.size(); ++j)
         {
             int i = vDepthIdx[j].second;
@@ -425,20 +442,28 @@ namespace SSLAM
 
             if (mCurrentFrame.mvDepth[i] > mThDepth * 3) continue;
 
-            if (!pMP)
+            if (!pMP || pMP->IsBad())
                 bCreateNew = true;
-                else if (pMP->Observations() < 1)
+            else if (pMP->Observations() < 1)
             {
                 bCreateNew = true;
                 mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
             }
-            else
+            else   // This MapPoint is associated to a feature-pair in current frame
+            {
+                // Associate EpipolarTriangle
+                EpipolarTriangle* pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
+                mCurrentFrame.mvpTriangles[i] = pNewTriangle;
+                pMP->AddTriangle(pNewTriangle);
+
                 nPoints++;
+            }
+
 
             if (bCreateNew)
             {
                 cv::Mat X3D = mCurrentFrame.UnprojectStereo(i);
-                MapPoint* pNewMP = new MapPoint(mCurrentFrame, i);
+                MapPoint* pNewMP = new MapPoint(mpMap, mCurrentFrame, i);
                 pNewMP->mpRefKF = pNewKF;
                 pNewMP->SetPos(X3D);
 
@@ -447,9 +472,15 @@ namespace SSLAM
                 pNewMP->ComputeDistinctiveDescriptors();
                 pNewMP->UpdateNormalAndDepth();
 
-                 mpMap->AddMapPoint(pNewMP);
+                mpMap->AddMapPoint(pNewMP);
 
                 mCurrentFrame.mvpMapPoints[i] = pNewMP;
+
+                // Associate EpipolarTriangle
+                EpipolarTriangle* pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
+                mCurrentFrame.mvpTriangles[i] = pNewTriangle;
+                pNewMP->AddTriangle(pNewTriangle);
+
 
                 nNewCreatedMapPoints++;
 
@@ -459,9 +490,14 @@ namespace SSLAM
 //            if (nPoints > 300) break;
         }
 
+        // First, process new created KeyFrame
+        mpLocalMapper->ProcessNewKeyFrame(pNewKF);
+
+        // Then, add new created KeyFrame to global Map
+        mpMap->AddKeyFrame(pNewKF);
+
         LOG(INFO) << "Create new KeyFrame: " << pNewKF->mnId << " based on Frame:" << mCurrentFrame.mnId;
         LOG(INFO) << "Create new MapPoints: " << nNewCreatedMapPoints << " ,total points: " << nPoints;
-
     }
 
     bool Tracker::StereoInitialization()
@@ -471,9 +507,11 @@ namespace SSLAM
 
         // The original position
         mCurrentFrame.SetPose(cv::Mat::eye(4, 4, CV_32F));
+
         // Create the first KeyFrame
         KeyFrame* pNewKF = new KeyFrame(mCurrentFrame, mpMap);
         mpMap->AddKeyFrame(pNewKF);
+
         int nNewCreatedMapPoints = 0;
         for (int i = 0; i < mCurrentFrame.N; ++i)
         {
@@ -482,7 +520,7 @@ namespace SSLAM
             {
                 const cv::Mat X3D = mCurrentFrame.UnprojectStereo(i);
 
-                MapPoint* pNewMP = new MapPoint(mCurrentFrame, i);
+                MapPoint* pNewMP = new MapPoint(mpMap, mCurrentFrame, i);
                 pNewMP->mpRefKF = pNewKF;
 
                 pNewMP->SetPos(X3D);
@@ -496,6 +534,12 @@ namespace SSLAM
 
                 mpMap->AddMapPoint(pNewMP);
                 nNewCreatedMapPoints++;
+
+                // Associate EpipolarTriangle
+                EpipolarTriangle* pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
+                mCurrentFrame.mvpTriangles[i] = pNewTriangle;
+                pNewMP->AddTriangle(pNewTriangle);
+
             }
         }
 

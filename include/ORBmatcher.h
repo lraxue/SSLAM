@@ -39,6 +39,13 @@ namespace SSLAM
 		int SearchCircleMatchesByProjection(const Frame &LastFrame, Frame &CurrentFrame, const float th);
 
 
+		// Search based on Epipolar Triangles
+		int SearchMatchesBasedOnEpipolarTriangles(const Frame& LastFrame, Frame& CurrentFrame, const float th);
+
+		// Project MapPoints into KeyFrame and search for duplicated MapPoints
+        int Fuse(KeyFrame* pKF, const std::vector<MapPoint*>& vpMapPoints, const float& th = 3.0);
+
+
 	public:
 		static const int TH_LOW;
 		static const int TH_HIGH;

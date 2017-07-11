@@ -624,7 +624,7 @@ namespace SSLAM
         return nInliers;
     }
 
-    int static Optimizer::ICP(const std::vector<cv::Point3f> &vPoints1, const std::vector<cv::Point3f> &vPoints2,
+    int Optimizer::ICP(const std::vector<cv::Point3f> &vPoints1, const std::vector<cv::Point3f> &vPoints2,
                               cv::Mat &R, cv::Mat &t, std::vector<bool> &vInliers)
     {
         g2o::SparseOptimizer optimizer;
