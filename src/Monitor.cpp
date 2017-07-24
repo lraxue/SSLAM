@@ -10,7 +10,8 @@ namespace SSLAM
 {
     void Monitor::DrawMatchesBetweenStereoFrame(const cv::Mat mLeft, const cv::Mat &mRight,
                                                 const std::vector<cv::KeyPoint> &vPointsLeft,
-                                                const std::vector<cv::KeyPoint> &vPointsRight, cv::Mat &out)
+                                                const std::vector<cv::KeyPoint> &vPointsRight, cv::Mat &out,
+                                                const std::vector<float>& vNCC)
     {
         if (mLeft.empty() || mRight.empty())
             LOG(INFO) << "The input image is empty, please check.";
@@ -22,6 +23,9 @@ namespace SSLAM
         mLeft.copyTo(out.rowRange(0, h).colRange(0, w));
         mRight.copyTo(out.rowRange(0, h).colRange(w, w * 2));
 
+
+        bool bShowNCC = vNCC.size() > 0 ? true : false;
+
         for(int i = 0, iend = vPointsLeft.size(); i < iend; ++i)
         {
             cv::Point p1 = vPointsLeft[i].pt;
@@ -32,6 +36,13 @@ namespace SSLAM
             cv::circle(out, p2, CIRCLE_RADIUS, cv::Scalar(0, 0, 255), CIRCLE_THICKNESS);
 
             cv::line(out, p1, p2, cv::Scalar(0, 255, 0), LINE_THICKNESS);
+
+            if (bShowNCC)
+            {
+                std::string info = std::to_string(vNCC[i]);
+                cv::putText(out, info, cv::Point(p1.x + 5, p1.y - 5), CV_FONT_HERSHEY_COMPLEX, 0.5,
+                            cv::Scalar(255, 0, 0), 1);
+            }
         }
     }
 
@@ -366,5 +377,34 @@ namespace SSLAM
             cv::line(out, p1, p3, cv::Scalar(255, 0, 0), LINE_THICKNESS);
             cv::line(out, p2, p4, cv::Scalar(255, 0, 0), LINE_THICKNESS);
         }
+    }
+
+    void Monitor::DrawKeyPointsWithInfo(const cv::Mat &img, const std::vector<cv::KeyPoint> &vKeys, cv::Mat &out, const float& thscore)
+    {
+        if (img.empty())
+        {
+            LOG(ERROR) << "The input image is empty, please check.";
+            return;
+        }
+
+        out = img.clone();
+
+        for (auto kp : vKeys)
+        {
+            cv::circle(out, kp.pt, 5, cv::Scalar(0, 0, 255), 2);
+
+            std::string info =
+//                    std::to_string(kp.octave) + "," +
+//                    std::to_string(kp.angle) + "," +
+                    std::to_string(kp.response);
+            if (thscore < 0 || kp.response > thscore)
+            {
+                cv::putText(out, info, cv::Point(kp.pt.x + 5, kp.pt.y - 5), CV_FONT_HERSHEY_COMPLEX, 0.5,
+                            cv::Scalar(255, 0, 0), 1);
+
+            }
+        }
+
+
     }
 }

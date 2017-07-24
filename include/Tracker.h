@@ -42,6 +42,7 @@ namespace SSLAM
 
         // Track local map
         void UpdateLastFrame();
+        void UpdateCurrentFrame();   // Mainly add current frame to the related tracked MapPoints
 
         void UpdateLocalKeyFrames();
         void UpdateLocalMapPoints();
@@ -51,6 +52,9 @@ namespace SSLAM
 
         // Create new KeyFrame
         void CreateNewKeyFrame();
+
+        // Create new KeyFrame based on track ability
+        void CreateNewKeyFrameBasedOnTrackAbility();
 
         // Stereo initialization
         bool StereoInitialization();

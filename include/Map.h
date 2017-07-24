@@ -42,6 +42,8 @@ namespace SSLAM
 
         int GetKeyFramesInMap();
 
+        std::mutex mMutexMapUpdate;
+
 
     protected:
         // Frames

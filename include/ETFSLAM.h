@@ -22,6 +22,7 @@ using namespace std;
 
 namespace SSLAM
 {
+
     class ETFSLAM
     {
     public:
@@ -42,6 +43,8 @@ namespace SSLAM
         void SaveAngleCorrespondedToOneMapPoint(const std::string& strAngleFile);
 
         /// Debugging functions
+
+        void SaveObservationsInfo(const std::string& strObservationFile);
 
     public:
         Tracker* mpTracker;

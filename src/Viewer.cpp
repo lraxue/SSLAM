@@ -77,7 +77,6 @@ namespace SSLAM
             cv::imshow("SSLAM: Current Frame", resizeIm);
             cv::waitKey(mT);
 
-
             if (Stop())
             {
                 while(isStopped())

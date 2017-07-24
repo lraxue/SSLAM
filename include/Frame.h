@@ -79,7 +79,16 @@ namespace SSLAM
 		// Compute stereo matches between left and right images
 		void ComputeStereoMatches();
 
+		// Compute NCC values of each match
+		void ComputeNCCValues();
+
+		// Generate all related epipolar triangles, used in Frame
+		int GenerateAllEpipolarTriangles();
+
+		/// For debugging
         // Record matched points, just for debugging
+		void RecordKeyPointInfo(const float scoreth = 10.0f);
+
         void Record();
 
         void GenerateDisparityMap();
@@ -97,14 +106,18 @@ namespace SSLAM
 		std::vector<cv::KeyPoint> mvKeysRight;
 		std::vector<cv::KeyPoint> mvKeysRightWithSubPixel;
 
+		// Features in grid
+		std::vector<std::vector<std::vector<int> > >mvFeaturesInGrid;
+
 		cv::Mat mDescriptorsLeft;
 		cv::Mat mDescriptorsRight;
 
 		std::vector<int> mvMatches;  // index of keypoints in right image, -1 default.
 		std::vector<float> mvuRight;
 		std::vector<float> mvDepth;
+        std::vector<float> mvMatchCosts;    // Match cost between matched key points, -1.0 default.
 		std::vector<bool> mvbOutliers;
-
+		std::vector<float> mvNCCValues;     // NCC between each matches
 		// Corresponded MapPoints
         std::vector<MapPoint*> mvpMapPoints;
 
@@ -159,10 +172,6 @@ namespace SSLAM
 		// Feature extractor
 		std::shared_ptr<ORBextractor> mpORBextractorLeft;
 		std::shared_ptr<ORBextractor> mpORBextractorRight;
-
-        // Features in grid
-        std::vector<std::vector<std::vector<int> > >mvFeaturesInGrid;
-
 	};
 }
 

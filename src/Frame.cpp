@@ -8,6 +8,9 @@
 #include "Frame.h"
 #include "GlobalParameters.h"
 #include "ORBmatcher.h"
+#include <FeatureDetector.h>
+#include <ImageProcessor.h>
+
 #include <Monitor.h>
 
 #include <glog/logging.h>
@@ -128,18 +131,29 @@ namespace SSLAM
 		mvbOutliers.resize(N, false);
         mvpMapPoints.resize(N, static_cast<MapPoint*>(NULL));
 		mvpTriangles.resize(N, static_cast<EpipolarTriangle*>(NULL));
+        mvMatchCosts.resize(N, -1.f);
+        mvNCCValues.resize(N, -1.f);
 
 		ComputeStereoMatches();
 
 		AssignFeaturesToGrid();
 
-        // Record, for debugging
-//        Record();
-//
-//		GenerateDisparityMap();
-//		SaveDepthMap();
+        ComputeNCCValues();  // Compute NCC values of each match
 
-//		cv::imwrite("Frame: " + to_string(mnId) + ".png", mDisp);
+
+#ifdef USE_TRIANGLE
+		GenerateAllEpipolarTriangles();
+#endif
+
+
+        // Record, for debugging
+#ifdef DEBUG_RECORD
+        Record();
+
+        RecordKeyPointInfo();
+
+		cv::imwrite("Frame: " + to_string(mnId) + ".png", mDisp);
+#endif
 	}
 	
 	void Frame::ExtractFeatures(const cv::Mat& im, const int& tag)
@@ -317,6 +331,7 @@ namespace SSLAM
 
 					// Record corrected position based on sub-pixel
 					mvKeysRightWithSubPixel[bestIdxR].pt.x = bestuR;
+                    mvMatchCosts[iL] = bestDist;
 				}
 			}
 		}
@@ -337,6 +352,28 @@ namespace SSLAM
 			}
 		}
 	}
+
+    void Frame::ComputeNCCValues()
+    {
+        const int w = 2;
+        for (int i = 0; i < N; ++i)
+        {
+            if (mvMatches[i] < 0)
+                continue;
+
+            const cv::Point2f p1 = mvKeysLeft[i].pt;
+            const cv::Point2f p2 = mvKeysRight[mvMatches[i]].pt;
+
+            const cv::Mat& a = mLeft.rowRange(p1.y - w, p1.y + w).colRange(p1.x - w, p1.x + w);
+            const cv::Mat& b = mRight.rowRange(p2.y - w, p2.y + w).colRange(p2.x - w, p2.x + w);
+
+            float ncc = ImageProcessor::NCC(a, b);
+
+            mvNCCValues[i] = ncc;
+
+//			LOG(INFO) << "Match: " << i << " with ncc " << ncc;
+        }
+    }
 
 
 	void Frame::SetPose(const cv::Mat& Pos)
@@ -412,6 +449,27 @@ namespace SSLAM
 
         return pNewET;
     }
+
+	int Frame::GenerateAllEpipolarTriangles()
+	{
+		int nValidET = 0;
+
+		for (int i = 0; i < N; ++i)
+		{
+			EpipolarTriangle* pET = GenerateEpipolarTriangle(i);
+
+			if (pET)
+			{
+				nValidET++;
+
+				mvpTriangles[i] = pET;
+			}
+		}
+
+		return nValidET;
+	}
+
+
 
     cv::Point2f Frame::Project3DPointOnLeftImage(const int &idx) const
     {
@@ -561,35 +619,6 @@ namespace SSLAM
 		return true;
 	}
 
-//    std::vector<int> Frame::SearchFeaturesInGrid(const float &cX, const float &cY, const float &radius /* = 5 */)
-//    {
-//        std::vector<int> vCandidates;
-//        vCandidates.reserve(50);
-//
-//        const float fGridRowPerPixel = mnGridRows / (float)mnImgHeight;
-//        const float fGridColPerPixel = mnGridCols / (float)mnImgWidth;
-//
-//        int minX = std::max(0.f, std::floor((cX - radius)*fGridColPerPixel));
-//        int maxX = std::min((float)mnGridCols, std::ceil((cX + radius) * fGridColPerPixel));
-//        int minY = std::max(0.f, std::floor((cY - radius) * fGridRowPerPixel));
-//        int maxY = std::min((float)mnGridRows, std::ceil((cY + radius) * fGridRowPerPixel));
-//
-//        // LOG(INFO) << "cX: " << cX << " ,cY: " << cY << " ,minX: " << minX << " ,maxX: " << maxX << " ,minY: " << minY << " ,maxY: " << maxY;
-//
-//        for (int y = minY; y < maxY; ++y)
-//        {
-//            for (int x = minX; x < maxX; ++x)
-//            {
-//                const std::vector<int>& vGridXY = mvFeaturesInGrid[y][x];
-//
-//                int nGridSize = mvFeaturesInGrid[y][x].size();
-//                for (int k = 0; k < nGridSize; ++k)
-//                    vCandidates.push_back(vGridXY[k]);
-//            }
-//        }
-//
-//        return vCandidates;
-//    }
 
 	std::vector<int> Frame::SearchFeaturesInGrid(const float &cX, const float &cY, const float &radius,
 												 const int minLevel, const int maxLevel) const
@@ -639,9 +668,27 @@ namespace SSLAM
 
 	}
 
+    void Frame::RecordKeyPointInfo(const float scoreth)
+    {
+        std::vector<cv::KeyPoint> vSelectedKeys;
+
+        for (auto pt : mvKeysLeft)
+        {
+            vSelectedKeys.push_back(pt);
+        }
+
+
+        cv::Mat mImgWithInfo;
+        Monitor::DrawKeyPointsWithInfo(mRGBLeft, vSelectedKeys, mImgWithInfo, -1.f);
+        cv::imshow("mImgWithInfo", mImgWithInfo);
+        cv::waitKey(0);
+    }
+
     void Frame::Record()
     {
         cv::Mat matchedImg;
+        cv::Mat modifiedImg;
+
         int nMatchedKeys = 0;
         std::vector<cv::KeyPoint> vMatchedKeysLeft;
         std::vector<cv::KeyPoint> vMatchedKeysRight;
@@ -665,26 +712,38 @@ namespace SSLAM
         cv::cvtColor(mRight, rgbRight, CV_GRAY2RGB);
 
         // Draw grid
-        // Monitor::DrawGridOnImage(rgbLeft, mnGridRows, mnGridCols, rgbLeft, cv::Scalar(255, 0, 0));
-        // Monitor::DrawGridOnImage(rgbRight, mnGridRows, mnGridCols, rgbRight, cv::Scalar(255, 0, 0));
+#ifdef DEBUG_DRAW_GRID
+         Monitor::DrawGridOnImage(rgbLeft, mnGridRows, mnGridCols, rgbLeft, cv::Scalar(255, 0, 0));
+         Monitor::DrawGridOnImage(rgbRight, mnGridRows, mnGridCols, rgbRight, cv::Scalar(255, 0, 0));
+#endif
 
-//        Monitor::DrawMatchesBetweenStereoFrame(rgbLeft, rgbRight, vMatchedKeysLeft, vMatchedKeysRight, matchedImg);
-//        cv::imshow("matched image", matchedImg);
+#ifdef DEBUG_DRAW_STEREOMATCHES
+        Monitor::DrawMatchesBetweenStereoFrame(rgbLeft, rgbRight, vMatchedKeysLeft, vMatchedKeysRight, matchedImg, mvNCCValues);
+#endif
 
-		const string tag = "Frame: " + to_string(mnId) + "-";
-        cv::Mat keysImg;
-        Monitor::DrawKeyPointsOnStereoFrame(rgbLeft, rgbRight, mvKeysLeft, mvKeysRight, keysImg);
-        cv::imshow("keys image " + to_string(mnId), keysImg);
+//		const string tag = "Frame: " + to_string(mnId) + "-";
+//        cv::Mat keysImg;
+//        Monitor::DrawKeyPointsOnStereoFrame(rgbLeft, rgbRight, mvKeysLeft, mvKeysRight, keysImg);
+//        cv::imshow("keys image " + to_string(mnId), keysImg); //
 //		cv::imwrite(tag + "keys image.png", keysImg);
 
-        cv::Mat modifiedImg;
+#ifdef DEBUG_DRAW_MODIFIED
         Monitor::DrawMatchesWithModifiedPosition(rgbLeft, rgbRight, vMatchedKeysLeft,
                                                  vMatchedKeysRight, vMatchedKeysRightModifiied, modifiedImg);
-        cv::imshow("modified img " + to_string(mnId), modifiedImg);
-		cv::imwrite(tag + "modified image.png", modifiedImg);
+#endif
 
-        cv::waitKey(0);
+//        if (mnId > 0)
+//            cv::destroyWindow("modified img " + to_string(mnId - 1));
 
+//        cv::imshow("modified img " + to_string(mnId), modifiedImg);
+//		cv::imwrite(tag + "modified image.png", modifiedImg);
+
+        if (!matchedImg.empty())
+            cv::imshow("matched image " + to_string(mnId), matchedImg);
+        if (!modifiedImg.empty())
+            cv::imshow("modified img " + to_string(mnId), modifiedImg);
+
+        cv::waitKey(100);
     }
 
 	void Frame::GenerateDisparityMap()

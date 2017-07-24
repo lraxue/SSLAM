@@ -55,6 +55,11 @@ namespace SSLAM
 
     }
 
+    cv::Mat EpipolarTriangle::GetX() const
+    {
+        return mX.clone();
+    }
+
     cv::Mat EpipolarTriangle::GetNormal() const
     {
         return mNormal.clone();

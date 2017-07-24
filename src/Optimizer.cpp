@@ -382,6 +382,9 @@ namespace SSLAM
             for (int i = 0, iend = vpMPs.size(); i < iend; ++i)
             {
                 MapPoint* pMP = vpMPs[i];
+
+                if (!pMP || pMP->IsBad()) continue;
+
                 if (pMP)
                 {
                     if (pMP->mnLocalBAForKF != pKF->mnId)
@@ -411,6 +414,10 @@ namespace SSLAM
 
             }
         }
+
+        LOG(INFO) << "Local KeyFrames: " << vLocalKFs.size() << " ,fixed local KeyFrames: "
+                  << vLocalFixedKFs.size() << " , MapPoints: " << vLocalMPs.size()
+                  << " to optimized in local bundle adjustment.";
 
 
         // Begin to optimize
@@ -465,12 +472,13 @@ namespace SSLAM
 
         const float thHuberStereo = sqrt(7.815);
 
-        for (std::vector<MapPoint*>::iterator vit = vLocalMPs.begin(), vend = vLocalMPs.begin(); vit != vend; vit++)
+        for (std::vector<MapPoint*>::iterator vit = vLocalMPs.begin(), vend = vLocalMPs.end(); vit != vend; vit++)
         {
             MapPoint* pMP = *vit;
 
             g2o::VertexSBAPointXYZ *vPoint = new g2o::VertexSBAPointXYZ();
             vPoint->setEstimate(Converter::toVector3d(pMP->GetPos()));
+
             int id = pMP->mnId + maxKFid + 1;
             vPoint->setId(id);
             vPoint->setMarginalized(true);
@@ -511,8 +519,6 @@ namespace SSLAM
                 vpEdgeStereo.push_back(e);
                 vpEdgeKFStereo.push_back(pKFi);
                 vpEdgeMapPointStereo.push_back(pMP);
-
-
             }
 
         }
@@ -530,7 +536,8 @@ namespace SSLAM
                 g2o::EdgeStereoSE3ProjectXYZ* e = vpEdgeStereo[i];
                 MapPoint* pMP = vpEdgeMapPointStereo[i];
 
-                // pMP->IsBad()
+                if (pMP->IsBad())
+                    continue;
 
                 if (e->chi2() > 7.815 || !e->isDepthPositive())
                     e->setLevel(1);
@@ -558,6 +565,9 @@ namespace SSLAM
             }
 
         }
+
+        // Get Map Mutex
+        std::unique_lock<std::mutex> lock(pMap->mMutexMapUpdate);
 
         // Erase failed observations
         if (!vToErase.empty())
@@ -587,10 +597,12 @@ namespace SSLAM
         for (std::vector<MapPoint*>::iterator vit = vLocalMPs.begin(), vend = vLocalMPs.end(); vit != vend; vit++)
         {
             MapPoint* pMP = *vit;
+
             g2o::VertexSBAPointXYZ* vPoint = static_cast<g2o::VertexSBAPointXYZ*>(optimizer.vertex(pMP->mnId + maxKFid + 1));
+
             pMP->SetPos(Converter::toCvMat(vPoint->estimate()));
 
-            // pMP->UpdateNormalAndDepth();
+            pMP->UpdateNormalAndDepth();
         }
 
 
@@ -598,9 +610,8 @@ namespace SSLAM
 
 
     //**********************************Pose optimization on 3D points**************************//
-    int Optimizer::PoseOptimizationOn3DPoints(Frame *pFrame)
+    int Optimizer::OptimisePoseOn3DPoints(Frame &frame)
     {
-        int nInliers = 0;
 
         g2o::SparseOptimizer optimizer;
         g2o::BlockSolver_6_3::LinearSolverType* linearSolver;
@@ -615,13 +626,110 @@ namespace SSLAM
 
         // Set Frame vertex
         g2o::VertexSE3Expmap* vSE3 = new g2o::VertexSE3Expmap();
-        vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
+        vSE3->setEstimate(Converter::toSE3Quat(frame.mTcw));
         vSE3->setId(0);
         vSE3->setFixed(false);
         optimizer.addVertex(vSE3);
 
 
-        return nInliers;
+        // Set MapPoint vertices
+        const int N = frame.N;
+
+        std::vector<EdgeProjectRGBDPoseOnly* > vpEdge3DPoint;
+        std::vector<size_t > vnIndexEdge3DPoint;
+        vpEdge3DPoint.reserve(N);
+        vnIndexEdge3DPoint.reserve(N);
+
+        const float delta3DPoint = sqrt(7.815);
+
+        for (int i = 0; i < N; ++i)
+        {
+            MapPoint* pMP = frame.mvpMapPoints[i];
+            if (pMP)
+            {
+                nInitialCorrespondences++;
+
+                frame.mvbOutliers[i] = false;
+
+                EpipolarTriangle* pTriangle = frame.mvpTriangles[i];
+                const cv::Mat Xc = pTriangle->GetX();
+
+                // Set Edge
+                const cv::Mat Xw = pMP->GetPos();  // Global 3D point
+
+                EdgeProjectRGBDPoseOnly* e = new EdgeProjectRGBDPoseOnly(Eigen::Vector3d(Xc.at<float>(0), Xc.at<float>(1), Xc.at<float>(2)));
+
+                e->setId(i + 1);
+                e->setVertex(0, dynamic_cast<g2o::VertexSE3Expmap*>(vSE3));
+                e->setMeasurement(Eigen::Vector3d(Xw.at<float>(0), Xw.at<float>(1), Xw.at<float>(2)));
+                e->setInformation(Eigen::Matrix3d::Identity() * 1e4);
+
+                optimizer.addEdge(e);
+                vpEdge3DPoint.push_back(e);
+                vnIndexEdge3DPoint.push_back(i);
+            }
+        }
+
+        if (nInitialCorrespondences < 3)
+            return 0;
+
+        LOG(INFO) << "Number of matched points to be optimized: " << nInitialCorrespondences;
+
+        // Perform 4 iterations
+        const float chi3DPoint[4] = {7.815, 7.815, 7.815, 7.815};
+        const int its[4] = {10, 10, 10, 10};
+
+        int nBad = 0;
+        for (int it = 0; it < 4; ++it)
+        {
+            vSE3->setEstimate(Converter::toSE3Quat(frame.mTcw));
+            optimizer.initializeOptimization(0);
+            optimizer.optimize(its[it]);
+
+            nBad = 0;
+
+            for (size_t i = 0, iend = vpEdge3DPoint.size(); i < iend; ++i)
+            {
+                EdgeProjectRGBDPoseOnly* e = vpEdge3DPoint[i];
+
+                const size_t idx = vnIndexEdge3DPoint[i];
+
+                if (frame.mvbOutliers[idx])
+                {
+                    e->computeError();
+                }
+
+                const float chi2 = e->chi2();
+                if (chi2 > chi3DPoint[it])
+                {
+                    frame.mvbOutliers[idx] = true;
+                    e->setLevel(1);
+                    nBad++;
+                }
+                else
+                {
+                    e->setLevel(0);
+                    frame.mvbOutliers[idx] = false;
+                }
+
+                if (it == 2)
+                    e->setRobustKernel(0);
+            }
+
+            if (optimizer.edges().size() < 10)
+                break;
+        }
+
+
+        g2o::SE3Quat SE3quat_recov = vSE3->estimate();
+        frame.SetPose(Converter::toCvMat(SE3quat_recov));
+
+        return nInitialCorrespondences - nBad;
+    }
+
+    void Optimizer::LocalBundleAdjustmentBasedOn3DPoints(KeyFrame *pKF, Map *pMap)
+    {
+        // TODO
     }
 
     int Optimizer::ICP(const std::vector<cv::Point3f> &vPoints1, const std::vector<cv::Point3f> &vPoints2,

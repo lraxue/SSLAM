@@ -16,7 +16,7 @@ using namespace std;
 
 namespace SSLAM
 {
-    Tracker::Tracker(FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, LocalMapper* pLocalMapper, Map* pMap):
+    Tracker::Tracker(FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, LocalMapper *pLocalMapper, Map *pMap) :
             mpMap(pMap), mpFrameDrawer(pFrameDrawer),
             mpMapDrawer(pMapDrawer), mpLocalMapper(pLocalMapper),
             mState(NOT_INITIALIZED)
@@ -36,15 +36,6 @@ namespace SSLAM
         mCurrentFrame = Frame(imLeft, imRight);
 
         Track();
-
-        std::vector<MapPoint*> allMapPoints = mpMap->GetAllMapPoints();
-
-        sort(allMapPoints.begin(), allMapPoints.end(), MapPoint::lId);
-
-        for (auto pMP : allMapPoints)
-        {
-            LOG(INFO) << "MapPoint: " << pMP->mnId << " with observations " << pMP->Observations();
-        }
 
         return mCurrentFrame.mTcw;
     }
@@ -85,8 +76,12 @@ namespace SSLAM
             else
                 mVelocity = cv::Mat::eye(4, 4, CV_32F);
 
+            // According to tacking information, update current KeyFrame
+            UpdateCurrentFrame();
+
             // Each Frame associate to one KeyFrame
-            CreateNewKeyFrame();
+            // CreateNewKeyFrame();
+            CreateNewKeyFrameBasedOnTrackAbility();
         }
 
         // Information transfer
@@ -96,10 +91,10 @@ namespace SSLAM
     bool Tracker::TrackBasedOnMotionPrediction()
     {
         // Predicted motion
-        mCurrentFrame.SetPose(mVelocity * mLastFrame.mTcw );
+        mCurrentFrame.SetPose(mVelocity * mLastFrame.mTcw);
 
         ORBmatcher matcher(0.8, true);
-        std::fill(mCurrentFrame.mvpMapPoints.begin(), mCurrentFrame.mvpMapPoints.end(), static_cast<MapPoint*>(NULL));
+        std::fill(mCurrentFrame.mvpMapPoints.begin(), mCurrentFrame.mvpMapPoints.end(), static_cast<MapPoint *>(NULL));
 
         int th = 7;
         int nMatchedPoints = matcher.SearchCircleMatchesByProjection(mLastFrame, mCurrentFrame, th);
@@ -107,14 +102,25 @@ namespace SSLAM
 
         if (nMatchedPoints < 20)
         {
-            std::fill(mCurrentFrame.mvpMapPoints.begin(), mCurrentFrame.mvpMapPoints.end(), static_cast<MapPoint*>(NULL));
+            std::fill(mCurrentFrame.mvpMapPoints.begin(), mCurrentFrame.mvpMapPoints.end(),
+                      static_cast<MapPoint *>(NULL));
             nMatchedPoints = matcher.SearchCircleMatchesByProjection(mLastFrame, mCurrentFrame, th * 2);
         }
 
-        LOG(INFO) << "Reprojection error in Frame: " << mCurrentFrame.mnId << " is " << mCurrentFrame.ComputeReprojectionError();
+        LOG(INFO) << "Reprojection error before optimization: " << mCurrentFrame.ComputeReprojectionError();
 
         // Number of inliers after optimization
-        int nInliers = Optimizer::OptimizePose(mCurrentFrame);
+        int nInliers = 0;
+
+        // Use Epipolar triangle for optimization
+
+//#ifdef USE_TRIANGLE
+//        nInliers = Optimizer::OptimisePoseOn3DPoints(mCurrentFrame);
+//#else
+//        nInliers = Optimizer::OptimizePose(mCurrentFrame);
+//#endif
+
+        nInliers = Optimizer::OptimizePose(mCurrentFrame);
 
         int nMatchesInMap = 0;
         for (int i = 0; i < mCurrentFrame.N; ++i)
@@ -123,9 +129,9 @@ namespace SSLAM
             {
                 if (mCurrentFrame.mvbOutliers[i])
                 {
-                    MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
+                    MapPoint *pMP = mCurrentFrame.mvpMapPoints[i];
 
-                    mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
+                    mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint *>(NULL);
                     mCurrentFrame.mvbOutliers[i] = false;
                     pMP->mbTrackInView = false;
                     pMP->mnLastFrameSeen = mCurrentFrame.mnId;
@@ -180,8 +186,8 @@ namespace SSLAM
 
         //**************** end of debugging*************
 
-        LOG(INFO) << "Number of inliers after optimization: " << nMatchedPoints;
-        LOG(INFO) << "Reprojection error in Frame: " << mCurrentFrame.mnId << " is " <<  mCurrentFrame.ComputeReprojectionError();
+        LOG(INFO) << "Number of inliers after tracking based on motion model: " << nMatchedPoints;
+        LOG(INFO) << "Reprojection error after tracking based on motion model: " <<  mCurrentFrame.ComputeReprojectionError();
 
         return nMatchesInMap >= 10;
 
@@ -193,24 +199,33 @@ namespace SSLAM
 
         SearchLocalMapPoints();
 
+        int nInliers = 0;
         // Optimize pose
-        Optimizer::OptimizePose(mCurrentFrame);
+
+//#ifdef USE_TRIANGLE
+//        nInliers = Optimizer::OptimisePoseOn3DPoints(mCurrentFrame);
+//#else
+//        nInliers = Optimizer::OptimizePose(mCurrentFrame);
+//#endif
+
+        nInliers = Optimizer::OptimizePose(mCurrentFrame);
         int mnMatchesInliers = 0;
 
         // Update MapPoints
         for (int i = 0; i < mCurrentFrame.N; ++i)
         {
-            MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
-            if (!pMP) continue;
+            MapPoint *pMP = mCurrentFrame.mvpMapPoints[i];
+            if (!pMP || pMP->IsBad()) continue;
+
             if (!mCurrentFrame.mvbOutliers[i])
             {
                 mnMatchesInliers++;
             }
             else
-                mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
+                mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint *>(NULL);
         }
 
-        LOG(INFO) << "Show reprojection after optimization.";
+        LOG(INFO) << "Reprojection error after track local map " << mCurrentFrame.ComputeReprojectionError();
 //        // For debugging
 //        cv::Mat mReprojAfterOptim;
 //        std::vector<cv::KeyPoint> vKeysLeft;
@@ -258,16 +273,18 @@ namespace SSLAM
 
     void Tracker::UpdateLastFrame()
     {
-        KeyFrame* pRef = mLastFrame.mpReferenceKF;
+        KeyFrame *pRef = mLastFrame.mpReferenceKF;
         mLastFrame.SetPose(mpReferenceKF->GetPose());
 
         // Create "visual odometry" MapPoints
         // We sort points according to their measured depth by the stereo/RGB-D sensor
         vector<pair<float, int> > vDepthIdx;
         vDepthIdx.reserve(mLastFrame.N);
-        for (int i = 0; i < mLastFrame.N; i++) {
+        for (int i = 0; i < mLastFrame.N; i++)
+        {
             float z = mLastFrame.mvDepth[i];
-            if (z > 0) {
+            if (z > 0)
+            {
                 vDepthIdx.push_back(make_pair(z, i));
             }
         }
@@ -280,7 +297,8 @@ namespace SSLAM
         // We insert all close points (depth<mThDepth)
         // If less than 100 close points, we insert the 100 closest ones.
         int nPoints = 0;
-        for (size_t j = 0; j < vDepthIdx.size(); j++) {
+        for (size_t j = 0; j < vDepthIdx.size(); j++)
+        {
             int i = vDepthIdx[j].second;
 
             bool bCreateNew = false;
@@ -288,11 +306,13 @@ namespace SSLAM
             MapPoint *pMP = mLastFrame.mvpMapPoints[i];
             if (!pMP)
                 bCreateNew = true;
-            else if (pMP->Observations() < 1) {
+            else if (pMP->Observations() < 1)
+            {
                 bCreateNew = true;
             }
 
-            if (bCreateNew) {
+            if (bCreateNew)
+            {
                 cv::Mat x3D = mLastFrame.UnprojectStereo(i);
                 MapPoint *pNewMP = new MapPoint(mpMap, mLastFrame, i);
                 pNewMP->SetPos(x3D);
@@ -301,7 +321,9 @@ namespace SSLAM
 
 //                mlpTemporalPoints.push_back(pNewMP);
                 nPoints++;
-            } else {
+            }
+            else
+            {
                 nPoints++;
             }
 
@@ -310,17 +332,101 @@ namespace SSLAM
         }
     }
 
+    void Tracker::UpdateCurrentFrame()
+    {
+
+        std::vector<std::pair<float, int> > vDepthIdx;
+        vDepthIdx.reserve(mCurrentFrame.N);
+        for (int i = 0; i < mCurrentFrame.N; ++i)
+        {
+            float z = mCurrentFrame.mvDepth[i];
+            if (z > 0)
+                vDepthIdx.push_back(std::make_pair(z, i));
+        }
+
+        std::sort(vDepthIdx.begin(), vDepthIdx.end());
+
+
+        int nTrackedGlobalMPs = 0;
+        int nTrackedTemporalMPs = 0;
+        int nCreatedTemporalMPs = 0;
+
+        bool bCreatedNew = false;
+
+        for (int j = 0; j < vDepthIdx.size(); ++j)
+        {
+            int i = vDepthIdx[j].second;
+            bCreatedNew = false;
+
+            MapPoint *pMP = mCurrentFrame.mvpMapPoints[i];
+            if (!pMP || pMP->IsBad())
+                bCreatedNew = true;
+            if (mCurrentFrame.mvbOutliers[i])
+                bCreatedNew;
+
+            if (bCreatedNew)
+            {
+                cv::Mat X3D = mCurrentFrame.UnprojectStereo(i);
+                MapPoint *pNewMP = new MapPoint(mpMap, mCurrentFrame, i);
+                pNewMP->SetPos(X3D);
+
+                // Associate EpipolarTriangle
+                EpipolarTriangle *pNewTriangle;
+
+#ifdef USE_TRIANGLE
+                pNewTriangle = mCurrentFrame.mvpTriangles[i];
+#else
+                pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
+                mCurrentFrame.mvpTriangles[i] = pNewTriangle;
+#endif
+
+                pNewMP->AddTriangle(pNewTriangle);
+
+                mCurrentFrame.mvpMapPoints[i] = pNewMP;
+                nCreatedTemporalMPs++;
+            }
+            else
+            {
+                if (pMP->mType == MapPoint::mGlobalPoint)
+                    nTrackedGlobalMPs++;
+                else if (pMP->mType == MapPoint::mTemporalPoint)
+                    nTrackedTemporalMPs++;
+
+
+                pMP->AddFounder(mCurrentFrame.mnId, i);
+
+                // Associate EpipolarTriangle
+                EpipolarTriangle *pNewTriangle;
+
+#ifdef USE_TRIANGLE
+                pNewTriangle = mCurrentFrame.mvpTriangles[i];
+#else
+                pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
+                mCurrentFrame.mvpTriangles[i] = pNewTriangle;
+#endif
+
+                pMP->AddTriangle(pNewTriangle);
+            }
+        }
+
+        LOG(INFO) << "Update Frame: " << mCurrentFrame.mnId
+                  << " with tracked global MPs: " << nTrackedGlobalMPs
+                  << ", tracked temporal MPs: " << nTrackedTemporalMPs
+                  << ", created temporal MPs:" << nCreatedTemporalMPs;
+    }
+
+
     void Tracker::UpdateLocalKeyFrames()
     {
         // Use the observed MapPoints search related KeyFrames
-        std::map<KeyFrame*, int> KFCounter;
+        std::map<KeyFrame *, int> KFCounter;
         for (int i = 0; i < mCurrentFrame.N; ++i)
         {
-            MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
+            MapPoint *pMP = mCurrentFrame.mvpMapPoints[i];
             if (!pMP) continue;
 
-            const std::map<KeyFrame*, int> obs = pMP->GetAllObservations();
-            for (std::map<KeyFrame*, int>::const_iterator mit = obs.begin(), mend = obs.end(); mit != mend; mit++)
+            const std::map<KeyFrame *, int> obs = pMP->GetAllObservations();
+            for (std::map<KeyFrame *, int>::const_iterator mit = obs.begin(), mend = obs.end(); mit != mend; mit++)
             {
                 KFCounter[mit->first]++;
             }
@@ -330,7 +436,8 @@ namespace SSLAM
 
             mvpLocalKeyFrames.clear();
 
-            for (std::map<KeyFrame*, int>::const_iterator mit = KFCounter.begin(), mend = KFCounter.end(); mit != mend; mit++)
+            for (std::map<KeyFrame *, int>::const_iterator mit = KFCounter.begin(), mend = KFCounter.end();
+                 mit != mend; mit++)
             {
                 mvpLocalKeyFrames.push_back(mit->first);
             }
@@ -344,15 +451,17 @@ namespace SSLAM
     {
         mvpLocalMapPoints.clear();
 
-        for (std::vector<KeyFrame*>::const_iterator vitKF = mvpLocalKeyFrames.begin(), vendKF = mvpLocalKeyFrames.end(); vitKF != vendKF; vitKF++)
+        for (std::vector<KeyFrame *>::const_iterator vitKF = mvpLocalKeyFrames.begin(), vendKF = mvpLocalKeyFrames.end();
+             vitKF != vendKF; vitKF++)
         {
-            KeyFrame* pKF = *vitKF;
+            KeyFrame *pKF = *vitKF;
 
-            const std::vector<MapPoint*> vpMPs = pKF->GetMapPointMatches();
+            const std::vector<MapPoint *> vpMPs = pKF->GetMapPointMatches();
 
-            for (std::vector<MapPoint*>::const_iterator vitMP = vpMPs.begin(), vendMP = vpMPs.end(); vitMP != vendMP; vitMP++)
+            for (std::vector<MapPoint *>::const_iterator vitMP = vpMPs.begin(), vendMP = vpMPs.end();
+                 vitMP != vendMP; vitMP++)
             {
-                MapPoint* pMP = *vitMP;
+                MapPoint *pMP = *vitMP;
                 if (!pMP)
                     continue;
                 if (pMP->IsBad())
@@ -377,9 +486,10 @@ namespace SSLAM
 
     void Tracker::SearchLocalMapPoints()
     {
-        for (std::vector<MapPoint*>::iterator vit = mCurrentFrame.mvpMapPoints.begin(), vend = mCurrentFrame.mvpMapPoints.end(); vit != vend; vit++)
+        for (std::vector<MapPoint *>::iterator vit = mCurrentFrame.mvpMapPoints.begin(), vend = mCurrentFrame.mvpMapPoints.end();
+             vit != vend; vit++)
         {
-            MapPoint* pMP = *vit;
+            MapPoint *pMP = *vit;
 
             if (!pMP)
                 continue;
@@ -390,11 +500,12 @@ namespace SSLAM
 
         int nToMatch = 0;
 
-        for (std::vector<MapPoint*>::iterator vit = mvpLocalMapPoints.begin(), vend = mvpLocalMapPoints.end(); vit != vend; vit++)
+        for (std::vector<MapPoint *>::iterator vit = mvpLocalMapPoints.begin(), vend = mvpLocalMapPoints.end();
+             vit != vend; vit++)
         {
-            MapPoint* pMP = *vit;
-           if (pMP->mnLastFrameSeen == mCurrentFrame.mnId)
-               continue;
+            MapPoint *pMP = *vit;
+            if (pMP->mnLastFrameSeen == mCurrentFrame.mnId)
+                continue;
 
             // Project
             if (mCurrentFrame.IsInFrustum(pMP, 0.5))
@@ -411,7 +522,7 @@ namespace SSLAM
 
     void Tracker::CreateNewKeyFrame()
     {
-        KeyFrame* pNewKF = new KeyFrame(mCurrentFrame, mpMap);
+        KeyFrame *pNewKF = new KeyFrame(mCurrentFrame, mpMap);
 //        mpMap->AddKeyFrame(pNewKF);
 
 
@@ -438,7 +549,7 @@ namespace SSLAM
             int i = vDepthIdx[j].second;
             bool bCreateNew = false;
 
-            MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
+            MapPoint *pMP = mCurrentFrame.mvpMapPoints[i];
 
             if (mCurrentFrame.mvDepth[i] > mThDepth * 3) continue;
 
@@ -447,23 +558,32 @@ namespace SSLAM
             else if (pMP->Observations() < 1)
             {
                 bCreateNew = true;
-                mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
+                mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint *>(NULL);
             }
             else   // This MapPoint is associated to a feature-pair in current frame
             {
-                // Associate EpipolarTriangle
-                EpipolarTriangle* pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
+                pNewKF->AddMapPoint(pMP, i);
+
+                EpipolarTriangle *pNewTriangle;
+
+#ifdef USE_TRIANGLE
+                pNewTriangle = mCurrentFrame.mvpTriangles[i];
+#else
+                pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
                 mCurrentFrame.mvpTriangles[i] = pNewTriangle;
+#endif
+
+                // Associate EpipolarTriangle
                 pMP->AddTriangle(pNewTriangle);
 
                 nPoints++;
             }
 
 
-            if (bCreateNew)
+            if (bCreateNew && nNewCreatedMapPoints < 300)
             {
                 cv::Mat X3D = mCurrentFrame.UnprojectStereo(i);
-                MapPoint* pNewMP = new MapPoint(mpMap, mCurrentFrame, i);
+                MapPoint *pNewMP = new MapPoint(mpMap, mCurrentFrame, i);
                 pNewMP->mpRefKF = pNewKF;
                 pNewMP->SetPos(X3D);
 
@@ -477,8 +597,15 @@ namespace SSLAM
                 mCurrentFrame.mvpMapPoints[i] = pNewMP;
 
                 // Associate EpipolarTriangle
-                EpipolarTriangle* pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
+                EpipolarTriangle *pNewTriangle;
+
+#ifdef USE_TRIANGLE
+                pNewTriangle = mCurrentFrame.mvpTriangles[i];
+#else
+                pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
                 mCurrentFrame.mvpTriangles[i] = pNewTriangle;
+#endif
+
                 pNewMP->AddTriangle(pNewTriangle);
 
 
@@ -500,6 +627,83 @@ namespace SSLAM
         LOG(INFO) << "Create new MapPoints: " << nNewCreatedMapPoints << " ,total points: " << nPoints;
     }
 
+
+    void Tracker::CreateNewKeyFrameBasedOnTrackAbility()
+    {
+        KeyFrame *pNewKF = new KeyFrame(mCurrentFrame, mpMap);
+
+        mpReferenceKF = pNewKF;
+
+        int nOldGlobalMPs = 0;
+        int nNewGlobalMPs = 0;
+
+        const int thAge = 3;
+        bool bUpgradeMPBasedOnAge = pNewKF->mnId > 5 ? true:false;
+
+        for (int i = 0; i < mCurrentFrame.N; ++i)
+        {
+            MapPoint *pMP = mCurrentFrame.mvpMapPoints[i];
+            if (!pMP) continue;
+
+            // For tracked global MapPoint
+            if (pMP->mType == MapPoint::mGlobalPoint)
+            {
+                pNewKF->AddMapPoint(pMP, i);
+
+                nOldGlobalMPs++;
+            }
+            else // For temporal MapPoint
+            {
+                if (bUpgradeMPBasedOnAge)
+                {
+                    if (pMP->GetAge() > thAge)
+                    {
+                        pMP->mType = MapPoint::mGlobalPoint;
+
+                        pMP->mpRefKF = pNewKF;
+                        pNewKF->AddMapPoint(pMP, i);
+//                        pMP->ComputeDistinctiveDescriptors();
+//                        pMP->UpdateNormalAndDepth();
+
+                        mpMap->AddMapPoint(pMP);
+
+                        nNewGlobalMPs++;
+                    }
+                }
+                else
+                {
+                    if (mCurrentFrame.mvDepth[i] < mThDepth)
+                    {
+                        pMP->mType = MapPoint::mGlobalPoint;
+
+                        pMP->mpRefKF = pNewKF;
+                        pNewKF->AddMapPoint(pMP, i);
+
+//                        pMP->ComputeDistinctiveDescriptors();
+//                        pMP->UpdateNormalAndDepth();
+
+                        mpMap->AddMapPoint(pMP);
+                        nNewGlobalMPs++;
+                    }
+
+                }
+            }
+        }
+
+        LOG(INFO) << "Create new KeyFrame: " << pNewKF->mnId << " based on Frame:" << mCurrentFrame.mnId;
+        LOG(INFO) << "KeyFrame: " << pNewKF->mnId << " with old global MPs: " << nOldGlobalMPs << " , new global MPs: " << nNewGlobalMPs;
+
+        // Process new created KeyFrame
+        mpLocalMapper->ProcessNewKeyFrame(pNewKF);
+
+        // Add new KeyFrame to the global Map
+        mpMap->AddKeyFrame(pNewKF);
+
+
+//        LOG(INFO) << "Create new KeyFrame: " << pNewKF->mnId << " based on Frame:" << mCurrentFrame.mnId;
+//        LOG(INFO) << "KeyFrame: " << pNewKF->mnId << " with old global MPs: " << nOldGlobalMPs << " , new global MPs: " << nNewGlobalMPs;
+    }
+
     bool Tracker::StereoInitialization()
     {
         if (mCurrentFrame.N < 100)
@@ -509,21 +713,22 @@ namespace SSLAM
         mCurrentFrame.SetPose(cv::Mat::eye(4, 4, CV_32F));
 
         // Create the first KeyFrame
-        KeyFrame* pNewKF = new KeyFrame(mCurrentFrame, mpMap);
+        KeyFrame *pNewKF = new KeyFrame(mCurrentFrame, mpMap);
         mpMap->AddKeyFrame(pNewKF);
 
         int nNewCreatedMapPoints = 0;
         for (int i = 0; i < mCurrentFrame.N; ++i)
         {
             const float z = mCurrentFrame.mvDepth[i];
-            if (z > 0)
+            if (z > 0 && z < mThDepth)
             {
                 const cv::Mat X3D = mCurrentFrame.UnprojectStereo(i);
 
-                MapPoint* pNewMP = new MapPoint(mpMap, mCurrentFrame, i);
+                MapPoint *pNewMP = new MapPoint(mpMap, mCurrentFrame, i);
                 pNewMP->mpRefKF = pNewKF;
 
                 pNewMP->SetPos(X3D);
+                pNewMP->mType = MapPoint::mGlobalPoint;
 
                 mCurrentFrame.mvpMapPoints[i] = pNewMP;
 
@@ -536,8 +741,15 @@ namespace SSLAM
                 nNewCreatedMapPoints++;
 
                 // Associate EpipolarTriangle
-                EpipolarTriangle* pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
+                EpipolarTriangle *pNewTriangle;
+
+#ifdef USE_TRIANGLE
+                pNewTriangle = mCurrentFrame.mvpTriangles[i];
+#else
+                pNewTriangle = mCurrentFrame.GenerateEpipolarTriangle(i);
                 mCurrentFrame.mvpTriangles[i] = pNewTriangle;
+#endif
+
                 pNewMP->AddTriangle(pNewTriangle);
 
             }

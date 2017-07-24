@@ -53,7 +53,7 @@ namespace SSLAM
 
         const std::vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
 
-        LOG(INFO) << "Number of KFs: " << vpKFs.size();
+//        LOG(INFO) << "Number of KFs: " << vpKFs.size();
         if (bDrawKF)
         {
             for (int i = 0, iend = vpKFs.size(); i < iend; ++i)
@@ -102,7 +102,7 @@ namespace SSLAM
         if (bDrawGraph)
         {
             glLineWidth(mGraphLineWidth);
-            glColor4f(1.0f, 0.0f, 0.0f, 0.6f);
+            glColor4f(0.0f, 1.0f, 0.0f, 0.6f);
             glBegin(GL_LINES);
 
             for (int i = 0, iend = vpKFs.size(); i < iend; ++i)
@@ -111,7 +111,7 @@ namespace SSLAM
                 const std::vector<KeyFrame*> vCovKFs = vpKFs[i]->GetCovisibilityKeyFramesByWeight(10);
                 cv::Mat Ow = vpKFs[i]->GetCameraCenter();
 
-                LOG(INFO) << "KeyFrame: " << vpKFs[i]->mnId << " with " << vCovKFs.size() << " neighbors.";
+//                LOG(INFO) << "KeyFrame: " << vpKFs[i]->mnId << " with " << vCovKFs.size() << " neighbors.";
 
                 if (!vCovKFs.empty())
                 {
@@ -127,7 +127,6 @@ namespace SSLAM
                     }
                 }
             }
-
             glEnd();
         }
 
@@ -183,7 +182,7 @@ namespace SSLAM
 
     void MapDrawer::GetOpenGLCameraMatrix(pangolin::OpenGlMatrix &M)
     {
-        LOG(INFO) << "mCameraPose: " << mCameraPose;
+//        LOG(INFO) << "mCameraPose: " << mCameraPose;
 
         if (!mCameraPose.empty())
         {

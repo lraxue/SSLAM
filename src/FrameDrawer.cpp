@@ -73,6 +73,7 @@ namespace SSLAM
                 cv::circle(im, pt1, 5, cv::Scalar(255, 0, 0), 2);
                 cv::circle(im, pt2, 5, cv::Scalar(255, 0, 0), 2);
                 cv::line(im, pt1, pt2, cv::Scalar(0, 0, 255), 2);
+
                 mnTrackedMap++;
             }
             else
@@ -84,11 +85,11 @@ namespace SSLAM
                 mnTrackedVO++;
             }
 
-            cv::circle(im, pt3, 5, cv::Scalar(0, 255, 0), 2);
-            cv::circle(im, pt4, 5, cv::Scalar(0, 255, 0), 2);
+//            cv::circle(im, pt3, 5, cv::Scalar(0, 255, 0), 2);
+//            cv::circle(im, pt4, 5, cv::Scalar(0, 255, 0), 2);
 
-            cv::line(im, pt1, pt3, cv::Scalar(0, 255, 0), 2);
-            cv::line(im, pt2, pt4, cv::Scalar(0, 255, 0), 2);
+//            cv::line(im, pt1, pt3, cv::Scalar(0, 255, 0), 2);
+//            cv::line(im, pt2, pt4, cv::Scalar(0, 255, 0), 2);
         }
 
 

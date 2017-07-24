@@ -27,7 +27,7 @@ namespace SSLAM
         static void DrawMatchesBetweenStereoFrame(const cv::Mat mLeft, const cv::Mat& mRight,
                                            const std::vector<cv::KeyPoint>& vPointsLeft,
                                            const std::vector<cv::KeyPoint>& vPointsRight,
-                                           cv::Mat& out);
+                                           cv::Mat& out, const std::vector<float>& vNCC = std::vector<float>());
 
         /**
          *
@@ -84,6 +84,9 @@ namespace SSLAM
                                                       const std::vector<cv::KeyPoint>& vCurrKeysLeft,
                                                       const std::vector<cv::KeyPoint>& vCurrKeysRight,
                                                       cv::Mat& out);
+
+        static void DrawKeyPointsWithInfo(const cv::Mat& img, const std::vector<cv::KeyPoint>& vKeys, cv::Mat& out, const float& thscore = 10.f);
+
     };
 }
 

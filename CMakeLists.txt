@@ -74,7 +74,9 @@ add_executable(${PROJECT_NAME}
         src/MapDrawer.cpp
         src/Viewer.cpp
         src/ETFSLAM.cpp
-        src/TestTriangleForMatching.cpp src/LocalMapper.cpp)
+        src/Test.cpp
+        src/LocalMapper.cpp
+        src/FeatureDetector.cpp src/ImageProcessor.cpp)
 
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}

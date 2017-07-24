@@ -134,4 +134,55 @@ namespace SSLAM
 
         LOG(INFO) << "Save angle finished!";
     }
+
+    void ETFSLAM::SaveObservationsInfo(const std::string &strObservationFile)
+    {
+        fstream file(strObservationFile.c_str(), ios::in | ios::out);
+        if (!file.is_open())
+        {
+            LOG(ERROR) << "Open file " << strObservationFile << " error!";
+            return;
+        }
+
+        LOG(INFO) << "Save observation information to file " << strObservationFile;
+
+        std::vector<MapPoint*> allMapPoints = mpMap->GetAllMapPoints();
+        sort(allMapPoints.begin(), allMapPoints.end(), MapPoint::lId);
+
+        // Extract information
+        for (auto pMP : allMapPoints)
+        {
+            if (!pMP)
+                continue;
+            if (pMP->IsBad())
+                continue;
+
+            std::map<KeyFrame*, int> obs = pMP->GetAllObservations();
+
+            // Extract observations
+            std::vector<std::pair<unsigned long, int> > vAllObs;
+            for (auto mit : obs)
+            {
+                if (!mit.first)
+                    continue;
+                vAllObs.push_back(std::make_pair(mit.first->mnId, mit.second));
+            }
+
+            sort(vAllObs.begin(), vAllObs.end());
+
+            // Record MapPoint id and number of observations
+            if (vAllObs.empty())
+                continue;
+
+            file << pMP->mnId << " " << vAllObs.size() << endl;
+            for (auto Obsi : vAllObs)
+            {
+                file << Obsi.first << " " << Obsi.second << endl;
+            }
+        }
+
+        file.close();
+
+        LOG(INFO) << "Save observation finished.";
+    }
 }

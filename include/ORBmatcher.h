@@ -45,6 +45,10 @@ namespace SSLAM
 		// Project MapPoints into KeyFrame and search for duplicated MapPoints
         int Fuse(KeyFrame* pKF, const std::vector<MapPoint*>& vpMapPoints, const float& th = 3.0);
 
+		// For debugging
+		int MatchWithMotionPrediction(const Frame& LastFrame, const Frame& CurrentFrame, std::vector<int>& vMatches, const float th = 5);
+
+		int MatchWithMotionPredictionAndAngles(const Frame& lastFrame, const Frame& currentFrame, std::vector<int>& vMatches, const float th = 5, const float thAngle = 0.5);
 
 	public:
 		static const int TH_LOW;

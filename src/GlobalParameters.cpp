@@ -76,6 +76,8 @@ namespace SSLAM
 		mnFeatures = fs["ORBextractor.nFeatures"];
 		mnLevels = fs["ORBextractor.nLevels"];
 		mfScaleFactor = fs["ORBextractor.scaleFactor"];
+		iniThFAST = fs["ORBextractor.iniThFAST"];
+		minThFAST = fs["ORBextractor.minThFAST"];
 
 		mKeyFrameSize = fs["Viewer.KeyFrameSize"];
 		mKeyFrameLineWidth = fs["Viewer.KeyFrameLineWidth"];

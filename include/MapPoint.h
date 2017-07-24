@@ -10,6 +10,7 @@
 #include <EpipolarTriangle.h>
 
 #include <opencv2/opencv.hpp>
+#include <mutex>
 
 namespace SSLAM
 {
@@ -21,6 +22,12 @@ namespace SSLAM
     class MapPoint
     {
     public:
+        enum eMapPointType
+        {
+            mGlobalPoint = 1,
+            mTemporalPoint = 0,
+        };
+
         MapPoint(Map* pMap, const Frame& frame, const int& idx);
         ~MapPoint();
 
@@ -49,6 +56,11 @@ namespace SSLAM
 
 
         void AddFounder(const unsigned long& frameID, const int& idx);
+        std::map<unsigned long, int> GetAllFounders();
+
+        // Get properties
+        float GetTrackAbility() const;
+        int GetAge() const;
 
         // Update descriptor and normal vector
         void UpdateNormalAndDepth();
@@ -81,6 +93,8 @@ namespace SSLAM
     public:
         unsigned long mnId;
         bool mbBad;   // Tag for discarding
+
+        eMapPointType mType;
 
         int nObs;
         KeyFrame* mpRefKF;
@@ -117,6 +131,7 @@ namespace SSLAM
         // Frame id and index in frame
         std::map<unsigned long, int> mFeatureFlow;
         std::map<KeyFrame*, int> mObservations;
+        int mnFounders;
 
         // Triangle flow along time line
         std::list<EpipolarTriangle*> mlpTriangles;
@@ -129,6 +144,19 @@ namespace SSLAM
 
         // Global Map
         Map* mpMap;
+
+        std::mutex mMutexPos;
+
+    protected:
+        // private properties
+        int mnAge;    // number of observed KeyFrames
+
+        unsigned long mnReferenceFrame;   // first appear
+
+        float mTrackedAbility;  // number of observed KFs / number of KFs passed
+        // TODO, more properties needed to show the uncertainty of this point
+
+
 
 
     };

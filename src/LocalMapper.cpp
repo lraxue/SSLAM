@@ -49,7 +49,12 @@ namespace SSLAM
         mpCurrentKeyFrame->UpdateConnections();
 
         // First step
-        // FuseMapPoints();
+        FuseMapPoints();
+
+        // Second local bundle adjustment
+        Optimizer::LocalBundleAdjustment(mpCurrentKeyFrame, mpMap);
+
+        LOG(INFO) << "Process KeyFrame: " << mpCurrentKeyFrame->mnId << " finished.";
     }
 
     void LocalMapper::FuseMapPoints()
@@ -80,6 +85,8 @@ namespace SSLAM
             }
         }
 
+        LOG(INFO) << "KeyFrames to fused: " << vpTargetKFs.size();
+
         // Search matches by projection from current KeyFrame to target KeyFrames
         ORBmatcher matcher;
         std::vector<MapPoint*> vpMapPointsInCurrentKF = mpCurrentKeyFrame->GetMapPointMatches();
@@ -108,6 +115,8 @@ namespace SSLAM
                 vpCandidateMapPoints.push_back(pMP);
             }
         }
+
+        LOG(INFO) << "MapPoints to be fused: " << vpCandidateMapPoints.size();
 
         matcher.Fuse(mpCurrentKeyFrame, vpCandidateMapPoints);
 

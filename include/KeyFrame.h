@@ -50,9 +50,21 @@ namespace SSLAM
         void UpdateConnections();
         void UpdateBestCovisibleKeyFrames();
 
+
+        // Compute reprojection error
+        cv::Point2f Project3DPointOnLeftImage(const int& idx);
+        float ComputeReprojectionError(const int& idx);
+        float ComputeReprojectionError(MapPoint* pMP);
+
+
         static bool lId(KeyFrame* pKF1, KeyFrame* pKF2)
         {
             return pKF1->mnId < pKF2->mnId;
+        }
+
+        static bool weightComp(int a, int b)
+        {
+            return a > b;
         }
 
 

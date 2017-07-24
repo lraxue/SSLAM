@@ -4,6 +4,7 @@
 
 
 #include <Converter.h>
+#include <glog/logging.h>
 
 namespace SSLAM
 {
@@ -50,7 +51,9 @@ namespace SSLAM
     {
         cv::Mat cvMat(3, 1, CV_32F);
         for (int i = 0; i < 3; ++i)
+        {
             cvMat.at<float>(i) = m(i);
+        }
 
         return cvMat.clone();
     }
@@ -73,6 +76,8 @@ namespace SSLAM
     {
         Eigen::Matrix<double, 3, 1> v;
         v << cvVector.at<float>(0), cvVector.at<float>(1), cvVector.at<float>(2);
+
+        return v;
     }
 
 

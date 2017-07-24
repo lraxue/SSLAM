@@ -32,6 +32,8 @@ namespace SSLAM
                                                         mDescriptorsLeft(frame.mDescriptorsLeft.clone()),
                                                         mDescriptorsRight(mDescriptorsRight.clone()),
                                                         mvMatches(frame.mvMatches), mvuRight(frame.mvuRight),
+                                                        mvFeaturesInGrid(frame.mvFeaturesInGrid),
+                                                        //  mvpMapPoints(frame.mvpMapPoints),
                                                         mnScaleLevels(frame.mnScaleLevels), mfScaleFactor(frame.mfScaleFactor),
                                                         mfLogScaleFactor(frame.mfLogScaleFactor),
                                                         mvScaleFactors(frame.mvScaleFactors),
@@ -39,7 +41,8 @@ namespace SSLAM
                                                         mvInvScaleFactors(frame.mvInvScaleFactors),
                                                         mvLevelSigma2(frame.mvLevelSigma2),
                                                         mvInvLevelSigma2(frame.mvInvLevelSigma2),
-                                                        mnLocalBAForKF(0), mnLocalBAForFixedKF(0), mnFuseMapPointsForKF(0)
+                                                        mnLocalBAForKF(0), mnLocalBAForFixedKF(0),
+                                                        mnFuseMapPointsForKF(0)
     {
         if (!mbInitialization)
         {
@@ -195,7 +198,7 @@ namespace SSLAM
 
     std::vector<KeyFrame*> KeyFrame::GetCovisibilityKeyFramesByWeight(const int &w) const
     {
-        std::vector<int>::const_iterator up = std::upper_bound(mvOrderedWeights.begin(), mvOrderedWeights.end(), w);
+        std::vector<int>::const_iterator up = std::upper_bound(mvOrderedWeights.begin(), mvOrderedWeights.end(), w, KeyFrame::weightComp);
 
         int pos = up - mvOrderedWeights.begin();
         return std::vector<KeyFrame*>(mvOrderedNeighbors.begin(), mvOrderedNeighbors.begin() + pos);
@@ -222,7 +225,6 @@ namespace SSLAM
 
             std::map<KeyFrame*, int> obs = pMP->GetAllObservations();
 
-            LOG(INFO) << "Observations of MP: " << pMP->mnId << " in KeyFrame: " << mnId << " is " << obs.size();
             if (obs.empty()) continue;
 
             for (std::map<KeyFrame*, int>::const_iterator mit = obs.begin(), mend = obs.end(); mit != mend; mit++)
@@ -230,11 +232,8 @@ namespace SSLAM
                 if (mit->first->mnId == mnId)
                     continue;
                 mKFCounter[mit->first]++;
-                LOG(INFO) << mKFCounter[mit->first];
             }
         }
-
-        LOG(INFO) << "KeyFrame: " << mnId << " with relationships with " << mKFCounter.size() << " neighbors.";
 
         if (mKFCounter.empty())
             return;
@@ -384,6 +383,58 @@ namespace SSLAM
             return static_cast<MapPoint*>(NULL);
 
         return mvpMapPoints[idx];
+    }
+
+    cv::Point2f KeyFrame::Project3DPointOnLeftImage(const int &idx)
+    {
+        if (idx < 0 || idx >= N) return cv::Point2f();   // out of range
+        if (!mvpMapPoints[idx]) return cv::Point2f();    // Not exist
+
+        const cv::Mat X3Dw = mvpMapPoints[idx]->GetPos();  // Global pose. Embarrassed!
+        const cv::Mat X3Dc = mRcw * X3Dw + mtcw;           // Camera coordinate. Excited!
+        const float invz = 1.0 / X3Dc.at<float>(2);
+        const float x = X3Dc.at<float>(0);
+        const float y = X3Dc.at<float>(1);
+
+        const float u = x * fx * invz + cx;
+        const float v = y * fy  * invz + cy;
+
+        return cv::Point2f(u, v);
+    }
+
+    float KeyFrame::ComputeReprojectionError(const int &idx)
+    {
+        if (idx < 0 || idx >= N)
+            return -1.0f;
+
+        MapPoint* pMP = mvpMapPoints[idx];
+
+        if (!pMP)
+            return -1.0f;
+        else if (mvuRight[idx] < 0)
+            return 1.0f;
+
+        const cv::Mat X3D = mvpMapPoints[idx]->GetPos();
+
+        cv::Point2f rp = Project3DPointOnLeftImage(idx);
+        const cv::Point& p = mvKeysLeft[idx].pt;
+
+        const float du = p.x - rp.x;
+        const float dv = p.y - rp.y;
+        const float dru = mvuRight[idx] - (rp.x - mbf / X3D.at<float>(2));
+        return sqrt(du * du + dv * dv + dru * dru);
+    }
+
+    float KeyFrame::ComputeReprojectionError(MapPoint *pMP)
+    {
+        if (!pMP)
+            return -1.0f;
+
+        const int idx = pMP->GetIndexInKeyFrame(this);
+        if (idx < 0)
+            return -1.0f;
+
+        return ComputeReprojectionError(idx);
     }
 
 

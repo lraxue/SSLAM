@@ -20,6 +20,8 @@ namespace SSLAM
         ~EpipolarTriangle();
 
     public:
+        cv::Mat GetX() const;
+
         cv::Mat GetNormal() const;
 
         cv::Mat GetRawNormal() const;
@@ -70,6 +72,9 @@ namespace SSLAM
     protected:
         // Attributes
         float mAngle1, mAngle2, mAngle3;  // Three angles: top-left-right
+
+        // Uncertainty
+        float mUncertainty;  // Related to features and matching
 
         // Parameters after transformation
         cv::Mat mNormal;

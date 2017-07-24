@@ -12,21 +12,29 @@ namespace SSLAM
     MapPoint::MapPoint(Map* pMap, const Frame &frame, const int &idx):
             mpMap(pMap), mnLastFrameSeen(0),
             mnTrackLocalMapForFrame(0), mbBad(false),
-            mnFuseMapPointForKF(0), nObs(0)
+            mnFuseMapPointForKF(0), nObs(0),
+            mnFounders(0), mnAge(0), mTrackedAbility(0.f), mType(mTemporalPoint)
     {
         mnId = mnNext++;
-        mFeatureFlow[frame.mnId] = idx;
+//        mFeatureFlow[frame.mnId] = idx;
+
+        // AddFounder(frame.mnId, idx); // Add the first founder
+
+        mnReferenceFrame = frame.mnId;  // First appear
     }
 
     MapPoint::~MapPoint() {}
 
     void MapPoint::SetPos(const cv::Mat &pos)
     {
+        std::unique_lock<std::mutex> lock(mMutexPos);
         mPos = pos.clone();
+        //pos.copyTo(mPos);
     }
 
     cv::Mat MapPoint::GetPos()
     {
+        std::unique_lock<std::mutex> lock(mMutexPos);
         return mPos.clone();
     }
 
@@ -43,6 +51,32 @@ namespace SSLAM
     void MapPoint::AddFounder(const unsigned long &frameID, const int &idx)
     {
         mFeatureFlow[frameID] = idx;
+
+        mnFounders += 1;  // For stereo cameras
+
+        if (frameID == mnReferenceFrame)
+            return;
+
+        int nPassedFrames = frameID - mnReferenceFrame + 1;
+
+        mnAge = nPassedFrames;
+        mTrackedAbility = mnFounders / nPassedFrames;
+    }
+
+    float MapPoint::GetTrackAbility() const
+    {
+        return mTrackedAbility;
+    }
+
+    int MapPoint::GetAge() const
+    {
+        return mnAge;
+    }
+
+
+    std::map<unsigned long, int> MapPoint::GetAllFounders()
+    {
+        return mFeatureFlow;
     }
 
     void MapPoint::AddObservation(KeyFrame *pKF, const int &idx)
@@ -51,7 +85,8 @@ namespace SSLAM
             return;
 
         mObservations[pKF] = idx;
-        nObs += 2;
+        nObs += 1;
+
     }
 
     void MapPoint::EraseObservation(KeyFrame *pKF)
@@ -62,6 +97,8 @@ namespace SSLAM
 
         nObs -= 2;
         mObservations.erase(pKF);
+
+
 
         // Observed by at least 2 stereo frames
         if (nObs <= 2)
@@ -143,6 +180,7 @@ namespace SSLAM
 
     cv::Mat MapPoint::GetNormal()
     {
+        std::unique_lock<std::mutex> lock(mMutexPos);
         return mNormalVector.clone();
     }
 

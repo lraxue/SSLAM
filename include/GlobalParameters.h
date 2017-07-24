@@ -11,6 +11,28 @@
 
 #include <string>
 
+#ifndef USE_TRIANGLE
+#define USE_TRIANGLE
+#endif
+
+//#ifndef DEBUG_RECORD
+//#define DEBUG_RECORD
+//#endif
+
+//#ifndef DEBUG_DRAW_GRID
+//#define DEBUG_DRAW_GRID
+//#endif
+
+//#ifndef DEBUG_DRAW_STEREOMATCHES
+//#define DEBUG_DRAW_STEREOMATCHES
+//#endif
+
+//#ifndef DEBUG_DRAW_MODIFIED
+//#define DEBUG_DRAW_MODIFIED
+//#endif
+
+
+
 namespace SSLAM
 {
 	// This class serves as a data class
@@ -60,7 +82,6 @@ namespace SSLAM
         static float mViewpointY;
         static float mViewpointZ;
         static float mViewpointF;
-
 
 	};
 }
