@@ -26,6 +26,10 @@ namespace SSLAM
         const cv::Mat& mDescll = lastFrame.mDescriptorsLeft;
         const cv::Mat& mDesccl = currentFrame.mDescriptorsLeft;
 
+        // Record
+        std::vector<cv::KeyPoint> vMatchedKeys1;
+        std::vector<cv::KeyPoint> vMatchedKeys2;
+
         // Test Bruteforce match
 
         std::vector<int> vBFmatches;
@@ -38,19 +42,36 @@ namespace SSLAM
         {
             if (vBFmatches[i] < 0)
                 continue;
+
+            int matchedIdx = vBFmatches[i];
+
+            vMatchedKeys1.push_back(vKeysll[i]);
+            vMatchedKeys2.push_back(vKeyscl[matchedIdx]);
+
+            if (vMatchesl[i] < 0)
+                continue;
+
+
+            if (vMatchesc[matchedIdx] < 0)
+                continue;
+
             vBFkeysll.push_back(vKeysll[i]);
             vBFkeyslr.push_back(vKeyslr[vMatchesl[i]]);
 
-            int matchedIdx = vBFmatches[i];
             vBFkeyscl.push_back(vKeyscl[matchedIdx]);
             vBFkeyscr.push_back(vKeyscr[vMatchesc[matchedIdx]]);
         }
 
         cv::Mat mBFmatched;
-        Monitor::DrawMatchesBetweenTwoStereoFrames(lastFrame.mLeft, lastFrame.mRight,
-                                                   currentFrame.mLeft, currentFrame.mRight,
+        Monitor::DrawMatchesBetweenTwoStereoFrames(lastFrame.mRGBLeft, lastFrame.mRGBRight,
+                                                   currentFrame.mRGBLeft, currentFrame.mRGBRight,
                                                    vBFkeysll, vBFkeyslr, vBFkeyscl, vBFkeyscr,
                                                    mBFmatched);
+
+        cv::Mat mBFmatchedl;
+        Monitor::DrawMatchesBetweenTwoImages(lastFrame.mRGBLeft, currentFrame.mRGBLeft, vMatchedKeys1, vMatchedKeys2, mBFmatchedl, false);
+        vMatchedKeys1.clear();
+        vMatchedKeys2.clear();
 
         LOG(INFO) << "BF matches: " << nBFmatches;
 
@@ -79,19 +100,36 @@ namespace SSLAM
         {
             if (vRAmatches[i] < 0)
                 continue;
+
+            int matchedIdx = vRAmatches[i];
+
+            vMatchedKeys1.push_back(vKeysll[i]);
+            vMatchedKeys2.push_back(vKeyscl[matchedIdx]);
+
+            if (vMatchesl[i] < 0)
+                continue;
+
+            if (vMatchesc[matchedIdx] < 0)
+                continue;
+
             vRAkeysll.push_back(vKeysll[i]);
             vRAkeyslr.push_back(vKeyslr[vMatchesl[i]]);
 
-            int matchedIdx = vRAmatches[i];
             vRAkeyscl.push_back(vKeyscl[matchedIdx]);
             vRAkeyscr.push_back(vKeyscr[vMatchesc[matchedIdx]]);
         }
 
         cv::Mat mRAmatched;
-        Monitor::DrawMatchesBetweenTwoStereoFrames(lastFrame.mLeft, lastFrame.mRight,
-                                                   currentFrame.mLeft, currentFrame.mRight,
+        Monitor::DrawMatchesBetweenTwoStereoFrames(lastFrame.mRGBLeft, lastFrame.mRGBRight,
+                                                   currentFrame.mRGBLeft, currentFrame.mRGBRight,
                                                    vRAkeysll, vRAkeyslr, vRAkeyscl, vRAkeyscr,
                                                    mRAmatched);
+
+        cv::Mat mRAmatchedl;
+        Monitor::DrawMatchesBetweenTwoImages(lastFrame.mRGBLeft, currentFrame.mRGBLeft, vMatchedKeys1, vMatchedKeys2, mRAmatchedl, false);
+        vMatchedKeys1.clear();
+        vMatchedKeys2.clear();
+
         LOG(INFO) << "Ransac matches: " << nRAmatches;
 
         // Test Match based on motion
@@ -107,25 +145,40 @@ namespace SSLAM
         {
             if (vMotionMatches[i] < 0)
                 continue;
+
+            int matchedIdx = vMotionMatches[i];
+
+            vMatchedKeys1.push_back(vKeysll[i]);
+            vMatchedKeys2.push_back(vKeyscl[matchedIdx]);
+
+            if (vMatchesl[i] < 0)
+                continue;
+
+            if (vMatchesc[matchedIdx] < 0)
+                continue;
+
             vMotionkeysll.push_back(vKeysll[i]);
             vMotionkeyslr.push_back(vKeyslr[vMatchesl[i]]);
 
-            int matchedIdx = vRAmatches[i];
             vMotionkeyscl.push_back(vKeyscl[matchedIdx]);
             vMotionkeyscr.push_back(vKeyscr[vMatchesc[matchedIdx]]);
         }
 
         cv::Mat mMotionMatched;
-        Monitor::DrawMatchesBetweenTwoStereoFrames(lastFrame.mLeft, lastFrame.mRight,
-                                                   currentFrame.mLeft, currentFrame.mRight,
+        Monitor::DrawMatchesBetweenTwoStereoFrames(lastFrame.mRGBLeft, lastFrame.mRGBRight,
+                                                   currentFrame.mRGBLeft, currentFrame.mRGBRight,
                                                    vMotionkeysll, vMotionkeyslr, vMotionkeyscl, vMotionkeyscr,
                                                    mMotionMatched);
+        cv::Mat mMotionmatchedl;
+        Monitor::DrawMatchesBetweenTwoImages(lastFrame.mRGBLeft, currentFrame.mRGBLeft, vMatchedKeys1, vMatchedKeys2, mMotionmatchedl, false);
+        vMatchedKeys1.clear();
+        vMatchedKeys2.clear();
 
         LOG(INFO) << "Motion matches: " << nMotionMatches;
 
         // Test angle
         std::vector<int> vAngleMatches;
-        int nAngleMatches = matcher.MatchWithMotionPredictionAndAngles(lastFrame, currentFrame, vAngleMatches);
+        int nAngleMatches = matcher.MatchWithMotionPredictionAndAngles(lastFrame, currentFrame, vAngleMatches, 5, 0.05);
 
         std::vector<cv::KeyPoint> vAnglekeysll;
         std::vector<cv::KeyPoint> vAnglekeyslr;
@@ -135,21 +188,47 @@ namespace SSLAM
         {
             if (vAngleMatches[i] < 0)
                 continue;
+
+            int matchedIdx = vAngleMatches[i];
+
+            vMatchedKeys1.push_back(vKeysll[i]);
+            vMatchedKeys2.push_back(vKeyscl[matchedIdx]);
+
+            if (vMatchesc[matchedIdx] < 0)
+                continue;
+
             vAnglekeysll.push_back(vKeysll[i]);
             vAnglekeyslr.push_back(vKeyslr[vMatchesl[i]]);
 
-            int matchedIdx = vAngleMatches[i];
             vAnglekeyscl.push_back(vKeyscl[matchedIdx]);
             vAnglekeyscr.push_back(vKeyscr[vMatchesc[matchedIdx]]);
         }
 
         cv::Mat mAngleMatched;
-        Monitor::DrawMatchesBetweenTwoStereoFrames(lastFrame.mLeft, lastFrame.mRight,
-                                                   currentFrame.mLeft, currentFrame.mRight,
+        Monitor::DrawMatchesBetweenTwoStereoFrames(lastFrame.mRGBLeft, lastFrame.mRGBRight,
+                                                   currentFrame.mRGBLeft, currentFrame.mRGBRight,
                                                    vAnglekeysll, vAnglekeyslr, vAnglekeyscl, vAnglekeyscr,
                                                    mAngleMatched);
-
+        cv::Mat mAnglematchedl;
+        Monitor::DrawMatchesBetweenTwoImages(lastFrame.mRGBLeft, currentFrame.mRGBLeft, vMatchedKeys1, vMatchedKeys2, mAnglematchedl, false);
+        vMatchedKeys1.clear();
+        vMatchedKeys2.clear();
         LOG(INFO) << "Angle matches: " << nAngleMatches;
+
+
+        cv::imshow("mBFmatch", mBFmatched);
+        cv::imshow("mBFmatchl", mBFmatchedl);
+
+        cv::imshow("mRAmatch", mRAmatched);
+        cv::imshow("mRAmatchl", mRAmatchedl);
+
+        cv::imshow("mMotionMatch", mMotionMatched);
+        cv::imshow("mMotionMatch1", mMotionmatchedl);
+
+        cv::imshow("mAngleMatch", mAngleMatched);
+        cv::imshow("mAngleMatchl", mAnglematchedl);
+
+        cv::waitKey(0);
 
 
     }

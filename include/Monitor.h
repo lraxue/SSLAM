@@ -10,9 +10,9 @@
 namespace SSLAM
 {
 
-#define CIRCLE_RADIUS       10
-#define CIRCLE_THICKNESS    5
-#define LINE_THICKNESS      5
+#define CIRCLE_RADIUS       5
+#define CIRCLE_THICKNESS    2
+#define LINE_THICKNESS      2
     class Monitor
     {
     public:
@@ -85,8 +85,18 @@ namespace SSLAM
                                                       const std::vector<cv::KeyPoint>& vCurrKeysRight,
                                                       cv::Mat& out);
 
+        static void DrawMatchesBetweenTwoImages(const cv::Mat& mImg1, const cv::Mat& mImg2,
+                                                const std::vector<cv::KeyPoint>& vKeys1,
+                                                const std::vector<cv::KeyPoint>& vKeys2, cv::Mat& out, bool bHorizontal = true);
+
         static void DrawKeyPointsWithInfo(const cv::Mat& img, const std::vector<cv::KeyPoint>& vKeys, cv::Mat& out, const float& thscore = 10.f);
 
+        static void DrawPointsWithUncertaintyByRadius(const cv::Mat& mImg1, const cv::Mat& mImg2,
+                                              const std::vector<cv::KeyPoint>& vKeys1,
+                                              const std::vector<cv::KeyPoint>& vKeys2, cv::Mat& out,
+                                                      const std::vector<float>& vUncertainty,
+                                                      const std::vector<float>& vUncertaintyRight = std::vector<float>(),
+                                                      const bool bHorizontal = true, const cv::Scalar scalar = cv::Scalar(0, 0, 255));
     };
 }
 

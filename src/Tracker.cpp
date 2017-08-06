@@ -9,6 +9,8 @@
 #include <Monitor.h>
 #include <GlobalParameters.h>
 
+#include <Test.h>
+
 
 #include <glog/logging.h>
 
@@ -34,6 +36,12 @@ namespace SSLAM
     cv::Mat Tracker::GrabStereo(const cv::Mat &imLeft, const cv::Mat &imRight)
     {
         mCurrentFrame = Frame(imLeft, imRight);
+
+//        if (mCurrentFrame.mnId > 0)
+//        {
+//            // Test
+//            Test::TestMatch(mLastFrame, mCurrentFrame);
+//        }
 
         Track();
 
@@ -363,6 +371,9 @@ namespace SSLAM
                 bCreatedNew = true;
             if (mCurrentFrame.mvbOutliers[i])
                 bCreatedNew;
+
+            if (vDepthIdx[i].first < 0 || vDepthIdx[j].first > 3 * mThDepth)
+                continue;
 
             if (bCreatedNew)
             {

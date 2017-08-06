@@ -23,13 +23,18 @@
 //#define DEBUG_DRAW_GRID
 //#endif
 
-//#ifndef DEBUG_DRAW_STEREOMATCHES
-//#define DEBUG_DRAW_STEREOMATCHES
-//#endif
+#ifndef DEBUG_DRAW_STEREOMATCHES
+#define DEBUG_DRAW_STEREOMATCHES
+#endif
 
 //#ifndef DEBUG_DRAW_MODIFIED
 //#define DEBUG_DRAW_MODIFIED
 //#endif
+
+#ifndef DEBUG_DRAW_UNCERTAINTY
+#define DEBUG_DRAW_UNCERTAINTY
+#endif
+
 
 
 
@@ -52,6 +57,10 @@ namespace SSLAM
 		static float mbf;
 
 		static float mThDepth;
+
+		static float mThAngle;
+
+		static float mThMatch;
 
 		// Features parameters
 		static int mnLevels;

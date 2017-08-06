@@ -50,6 +50,37 @@ namespace SSLAM
 
     }
 
+    EpipolarTriangle::EpipolarTriangle(const unsigned long &frameId, const cv::Mat &X, const cv::Mat &Cl, cv::Mat &Cr,
+                                       const SUncertainty &uncertainty)
+    {
+        mnId = mnNext++;
+
+        mnFrameId = frameId;
+
+        // Initialize the three vertexes
+        mX = X.clone();
+        mCl = Cl.clone();
+        mCr = Cr.clone();
+
+        // Normal and distance
+        cv::Mat X12 = mCl - mX;
+        cv::Mat X13 = mCl - mCr;
+
+        cv::Mat normal = X12.cross(X13);
+
+        mNormal = normal / cv::norm(normal);
+        mD = cv::norm(mX.t() * mNormal);
+
+        mRawNormal = mNormal;
+        mRawD = mD;
+
+        // Compute three angles
+        ComputeThreeAngles();
+
+        // Set uncertainty
+        mUncertainty = uncertainty;
+    }
+
     EpipolarTriangle::~EpipolarTriangle()
     {
 

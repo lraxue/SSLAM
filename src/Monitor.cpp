@@ -379,6 +379,49 @@ namespace SSLAM
         }
     }
 
+    void Monitor::DrawMatchesBetweenTwoImages(const cv::Mat &mImg1, const cv::Mat &mImg2,
+                                              const std::vector<cv::KeyPoint> &vKeys1,
+                                              const std::vector<cv::KeyPoint> &vKeys2, cv::Mat &out, bool bHorizontal)
+    {
+        if (mImg1.empty() || mImg2.empty())
+        {
+            LOG(ERROR) << "The input images are empty, please check.";
+            return;
+        }
+
+        const int W = mImg1.cols;
+        const int H = mImg1.rows;
+
+        if (bHorizontal)
+        {
+            out = cv::Mat(H, 2 * W, mImg1.type());
+            mImg1.copyTo(out.rowRange(0, H).colRange(0, W));
+            mImg2.copyTo(out.rowRange(0, H).colRange(W, 2 * W));
+        }
+        else
+        {
+            out = cv::Mat(2 * H, W, mImg1.type());
+            mImg1.copyTo(out.rowRange(0, H).colRange(0, W));
+            mImg2.copyTo(out.rowRange(H, 2 * H).colRange(0, W));
+        }
+
+        for (int i = 0, iend = vKeys1.size(); i < iend; ++i)
+        {
+            cv::Point2f p1 = vKeys1[i].pt;
+            cv::Point2f p2 = vKeys2[i].pt;
+
+            cv::circle(out, p1, CIRCLE_RADIUS, cv::Scalar(0, 0, 255), CIRCLE_THICKNESS);
+
+            if (bHorizontal)
+                p2.x += W;
+            else
+                p2.y += H;
+
+            cv::circle(out, p2, CIRCLE_RADIUS, cv::Scalar(0, 0, 255), CIRCLE_THICKNESS);
+            cv::line(out, p1, p2, cv::Scalar(0, 255, 0), LINE_THICKNESS);
+        }
+    }
+
     void Monitor::DrawKeyPointsWithInfo(const cv::Mat &img, const std::vector<cv::KeyPoint> &vKeys, cv::Mat &out, const float& thscore)
     {
         if (img.empty())
@@ -404,7 +447,84 @@ namespace SSLAM
 
             }
         }
+    }
+
+    void Monitor::DrawPointsWithUncertaintyByRadius(const cv::Mat &mImg1, const cv::Mat &mImg2,
+                                                    const std::vector<cv::KeyPoint> &vKeys1,
+                                                    const std::vector<cv::KeyPoint> &vKeys2, cv::Mat &out,
+                                                    const std::vector<float> &vUncertainty,
+                                                    const std::vector<float> &vUncertaintyRight, const bool bHorizontal, const cv::Scalar scalar)
+    {
+        if (mImg1.empty() || mImg2.empty())
+        {
+            LOG(ERROR) << "The input images are empty, please check.";
+            return;
+        }
+
+        const int W = mImg1.cols;
+        const int H = mImg1.rows;
+
+        if (bHorizontal)
+        {
+            out = cv::Mat(H, 2 * W, mImg1.type());
+            mImg1.copyTo(out.rowRange(0, H).colRange(0, W));
+            mImg2.copyTo(out.rowRange(0, H).colRange(W, 2 * W));
+        }
+        else
+        {
+            out = cv::Mat(2 * H, W, mImg1.type());
+            mImg1.copyTo(out.rowRange(0, H).colRange(0, W));
+            mImg2.copyTo(out.rowRange(H, 2 * H).colRange(0, W));
+        }
+
+        const float radius = 20;
+        float maxVal = 1.0, minVal = 0.f;
+
+        std::vector<float>::const_iterator biggest = std::max_element(std::begin(vUncertainty), std::end(vUncertainty));
+        std::vector<float>::const_iterator smallest = std::min_element(std::begin(vUncertainty), std::end(vUncertainty));
+
+        maxVal = *biggest;
+        minVal = *smallest;
+
+        if (!vUncertaintyRight.empty())
+        {
+            std::vector<float>::const_iterator biggestR = std::max_element(std::begin(vUncertaintyRight), std::end(vUncertaintyRight));
+            std::vector<float>::const_iterator smallestR = std::min_element(std::begin(vUncertaintyRight), std::end(vUncertaintyRight));
+
+            if (maxVal < *biggestR)
+                maxVal = *biggestR;
+            if (minVal < *smallestR)
+                minVal = *smallestR;
+
+        }
+
+        float scale = radius / (maxVal - minVal);
+
+        // cv::Mat RedPan = cv::Mat(100, 100, mImg1.type(), cv::Scalar(0, 0, 255));
+
+        for (int i = 0, iend = vKeys1.size(); i < iend; ++i)
+        {
+            cv::Point2f p1 = vKeys1[i].pt;
+            cv::Point2f p2 = vKeys2[i].pt;
+            const float uVal = vUncertainty[i];
+
+            cv::Mat out_clone = out.clone();
+
+            cv::circle(out_clone, p1, CIRCLE_RADIUS, scalar, CIRCLE_THICKNESS);  // (uVal - minVal) * scale + 3
+
+            if (bHorizontal)
+                p2.x += W;
+            else
+                p2.y += H;
+
+//            if (vUncertaintyRight.empty())
+//                cv::circle(out_clone, p2, (uVal - minVal) * scale + 3, scalar, -1);
+//            else
+//                cv::circle(out_clone, p2, (vUncertaintyRight[i] - minVal) * scale + 3, scalar, -1);
 
 
+            cv::addWeighted(out, 0, out_clone, 1.0, 0.0, out);
+            // cv::line(out, p1, p2, cv::Scalar(0, 255, 0), LINE_THICKNESS);
+        }
     }
 }

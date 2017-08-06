@@ -4,6 +4,7 @@
 
 #include <FrameDrawer.h>
 #include <GlobalParameters.h>
+#include <glog/logging.h>
 
 using namespace std;
 namespace SSLAM
@@ -16,6 +17,8 @@ namespace SSLAM
 
         // For stereo image
         mIm = cv::Mat(mnImgHeight, mnImgWidth * 2, CV_8UC3, cv::Scalar(0, 0, 0));
+
+        LOG(INFO) << mnImgHeight << " " << mnImgWidth;
     }
 
     FrameDrawer::~FrameDrawer()
@@ -31,8 +34,12 @@ namespace SSLAM
         std::vector<cv::Point2f> vProjectedKeysLeft;
         std::vector<cv::Point2f> vProjectedKeysRight;
 
+        std::vector<int> vObservations;
+
         std::vector<int> vMatches;
         std::vector<bool> vbMap;
+
+        int frameId;
         {
             std::unique_lock<std::mutex> lock(mMutex);
 
@@ -44,8 +51,12 @@ namespace SSLAM
             vProjectedKeysLeft = mvCurrentProjectedKeysLeft;
             vProjectedKeysRight = mvCurrentProjectedKeysRight;
 
+            vObservations = mnObservations;
+
             vMatches = mvMatches;
             vbMap = mvbMap;
+
+            frameId = mnFrameId;
         }
 
         if (im.channels() < 3)
@@ -55,6 +66,7 @@ namespace SSLAM
         mnTrackedMap = 0;
 
         const int n = vKeysLeft.size();
+        const int radius = 1;
 
         for (int i = 0; i < n; ++i)
         {
@@ -70,16 +82,16 @@ namespace SSLAM
 
             if (vbMap[i])
             {
-                cv::circle(im, pt1, 5, cv::Scalar(255, 0, 0), 2);
-                cv::circle(im, pt2, 5, cv::Scalar(255, 0, 0), 2);
+                cv::circle(im, pt1, radius * vObservations[i], cv::Scalar(255, 0, 0), 2);
+                cv::circle(im, pt2, radius * vObservations[i], cv::Scalar(255, 0, 0), 2);
                 cv::line(im, pt1, pt2, cv::Scalar(0, 0, 255), 2);
 
                 mnTrackedMap++;
             }
             else
             {
-                cv::circle(im, pt1, 5, cv::Scalar(255, 0, 0), 2);
-                cv::circle(im, pt2, 5, cv::Scalar(255, 0, 0), 2);
+                cv::circle(im, pt1, radius * vObservations[i], cv::Scalar(255, 0, 0), 2);
+                cv::circle(im, pt2, radius * vObservations[i], cv::Scalar(255, 0, 0), 2);
                 cv::line(im, pt1, pt2, cv::Scalar(255, 0, 0), 2);
 
                 mnTrackedVO++;
@@ -92,6 +104,7 @@ namespace SSLAM
 //            cv::line(im, pt2, pt4, cv::Scalar(0, 255, 0), 2);
         }
 
+        // cv::imwrite("observations/obs_" + std::to_string(frameId) + ".png", im);
 
         cv::Mat imWithInfo;
         DrawTextInfo(im, imWithInfo);
@@ -128,14 +141,19 @@ namespace SSLAM
         mnFrameId = frame.mnId;
         int nF = frame.N;
 
+        LOG(INFO) << frame.mRGBLeft.size() << " " << frame.mRGBRight.size() << " " << mIm.size() << " " << mnImgHeight << " " << mnImgWidth;
+
+
         frame.mRGBLeft.copyTo(mIm.rowRange(0, mnImgHeight).colRange(0, mnImgWidth));
         frame.mRGBRight.copyTo(mIm.rowRange(0, mnImgHeight).colRange(mnImgWidth, mIm.cols));
+
 
         const std::vector<int>& vMatches = frame.mvMatches;
         mvCurrentKeysLeft.clear();
         mvCurrentKeysRight.clear();
         mvCurrentProjectedKeysLeft.clear();
         mvCurrentProjectedKeysRight.clear();
+        mnObservations.clear();
         mvbMap.clear();
 
         for (int i = 0; i < nF; ++i)
@@ -143,6 +161,7 @@ namespace SSLAM
             MapPoint* pMP = frame.mvpMapPoints[i];
             if (pMP)
             {
+                if (pMP->Observations() < 1) continue;
                 if (frame.mvbOutliers[i]) continue;
 
                 mvCurrentKeysLeft.push_back(frame.mvKeysLeft[i]);
@@ -153,6 +172,8 @@ namespace SSLAM
 
                 mvCurrentProjectedKeysLeft.push_back(pt1);
                 mvCurrentProjectedKeysRight.push_back(pt2);
+
+                mnObservations.push_back(pMP->Observations());
 
                 // TODO
                 mvbMap.push_back(true);

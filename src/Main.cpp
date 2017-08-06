@@ -22,17 +22,18 @@ int main() {
     std::vector<string> vstrImageLeft;
     std::vector<string> vstrImageRight;
 
-    Preprocessor::LoadImages(strImagePathPKUDesk + "image_0/", vstrImageLeft, vstrImageRight);
-    GlobalParameters::LoadParameters(ProjectPath + strSettingFilePKUDesk);
+    Preprocessor::LoadImages(strImagePathKITTI00 + "image_0/", vstrImageLeft, vstrImageRight);
+    GlobalParameters::LoadParameters(ProjectPath + strSettingFileKitti00_02);
 //    GlobalParameters::LoadParameters(ProjectPath + "Stereo/adirondack.yaml"); // strSettingFile
 
     // Main Loop
 
     // Tracker tracker;
-    ETFSLAM slam(ProjectPath + strSettingFilePKUDesk);
+    ETFSLAM slam(ProjectPath + strSettingFileKitti00_02);
     int nImages = vstrImageLeft.size();
     LOG(INFO) << "Number of images: " << nImages;
 
+    // sleep(20);
     const std::string path = "/home/feixue/Research/Dataset/Stereo/Adirondack-perfect/";
     int startIdx = 0;
     int endIdx = nImages;
@@ -40,8 +41,8 @@ int main() {
     for (int i = startIdx; i < endIdx; i += step)
     {
         LOG(INFO) << "Process Frame: " << i << " ......";
-        cv::Mat imLeft = imread(strImagePathPKUDesk + "image_0/" + vstrImageLeft[i], CV_LOAD_IMAGE_GRAYSCALE);
-        cv::Mat imRight = imread(strImagePathPKUDesk + "image_1/" + vstrImageRight[i], CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat imLeft = imread(strImagePathKITTI00 + "image_0/" + vstrImageLeft[i], CV_LOAD_IMAGE_GRAYSCALE);
+        cv::Mat imRight = imread(strImagePathKITTI00 + "image_1/" + vstrImageRight[i], CV_LOAD_IMAGE_GRAYSCALE);
 
 //        cv::Mat imLeft = imread(path + "im0.png", CV_LOAD_IMAGE_GRAYSCALE);
 //        cv::Mat imRight = imread(path + "im1.png", CV_LOAD_IMAGE_GRAYSCALE);
