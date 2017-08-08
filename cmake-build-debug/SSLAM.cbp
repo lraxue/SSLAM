@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="SSLAM"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\usr\;CMake Files\..\..\..\..\..\..\usr\local\;CMake Files\..\..\..\..\..\..\usr\local\share\;CMake Files\..\..\..\..\..\..\usr\local\share\OpenCV\;CMake Files\..\..\..\..\..\..\usr\local\lib\;CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\;CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Pangolin\;CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\glog\;CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Ceres\;CMake Files\cmake_modules\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="SSLAM">
+				<Option output="/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/SSLAM" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DCOMPILEDWITHC11"/>
+					<Add option="-DGOOGLE_GLOG_DLL_DECL="/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/home/feixue/Research/Code/SLAM/SSLAM"/>
+					<Add directory="/home/feixue/Research/Code/SLAM/SSLAM/include"/>
+					<Add directory="/usr/include/eigen3"/>
+					<Add directory="/usr/local/lib/cmake/Pangolin/../../../include"/>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 SSLAM"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="SSLAM/fast">
+				<Option output="/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/SSLAM" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DCOMPILEDWITHC11"/>
+					<Add option="-DGOOGLE_GLOG_DLL_DECL="/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/home/feixue/Research/Code/SLAM/SSLAM"/>
+					<Add directory="/home/feixue/Research/Code/SLAM/SSLAM/include"/>
+					<Add directory="/usr/include/eigen3"/>
+					<Add directory="/usr/local/lib/cmake/Pangolin/../../../include"/>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 SSLAM/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/feixue/Research/Code/SLAM/SSLAM/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/Converter.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/ETFSLAM.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/EpipolarTriangle.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/FeatureDetector.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/Frame.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/FrameDrawer.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/GlobalParameters.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/ImageProcessor.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/KeyFrame.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/LocalMapper.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/Main.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/Map.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/MapDrawer.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/MapPoint.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/Monitor.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/ORBextractor.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/ORBmatcher.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/Optimizer.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/Preprocessor.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/Test.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/Tracker.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/src/Viewer.cpp">
+			<Option target="SSLAM"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/share/OpenCV/OpenCVConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/share/OpenCV/OpenCVConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/share/OpenCV/OpenCVModules.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/share/OpenCV/OpenCVModules-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Pangolin/PangolinConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Pangolin\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Pangolin/PangolinConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Pangolin\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Pangolin/PangolinTargets.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Pangolin\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Pangolin/PangolinTargets-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Pangolin\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/glog/glog-config-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\glog\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/glog/glog-config.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\glog\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/glog/glog-targets.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\glog\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/glog/glog-targets-noconfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\glog\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/glog/glog-config-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\glog\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/glog/glog-config.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\glog\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/glog/glog-targets.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\glog\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Ceres/CeresConfigVersion.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Ceres\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Ceres/CeresConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Ceres\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Ceres/FindEigen.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Ceres\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Ceres/FindGlog.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Ceres\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Ceres/FindGflags.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Ceres\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Ceres/CeresTargets.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Ceres\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/../../../../../../usr/local/lib/cmake/Ceres/CeresTargets-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\usr\local\lib\cmake\Ceres\"/>
+		</Unit>
+		<Unit filename="/home/feixue/Research/Code/SLAM/SSLAM/cmake_modules/FindEigen3.cmake">
+			<Option virtualFolder="CMake Files\cmake_modules\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

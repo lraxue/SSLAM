@@ -4,6 +4,7 @@
 
 
 #include <Converter.h>
+#include <glog/logging.h>
 
 namespace SSLAM
 {
@@ -50,7 +51,9 @@ namespace SSLAM
     {
         cv::Mat cvMat(3, 1, CV_32F);
         for (int i = 0; i < 3; ++i)
+        {
             cvMat.at<float>(i) = m(i);
+        }
 
         return cvMat.clone();
     }
@@ -73,6 +76,33 @@ namespace SSLAM
     {
         Eigen::Matrix<double, 3, 1> v;
         v << cvVector.at<float>(0), cvVector.at<float>(1), cvVector.at<float>(2);
+
+        return v;
+    }
+
+    Eigen::Matrix<double, 3, 3> Converter::toMatrix3d(const cv::Mat& cvMat3)
+    {
+        Eigen::Matrix<double, 3, 3> M;
+
+        M <<    cvMat3.at<float>(0, 0), cvMat3.at<float>(0, 1), cvMat3.at<float>(0, 2),
+                cvMat3.at<float>(1, 0), cvMat3.at<float>(1, 1), cvMat3.at<float>(1, 2),
+                cvMat3.at<float>(2, 0), cvMat3.at<float>(2, 1), cvMat3.at<float>(2, 2);
+
+        return M;
+    }
+
+    std::vector<float> Converter::toQuaternion(const cv::Mat &M)
+    {
+        Eigen::Matrix<double, 3, 3> eigMat = toMatrix3d(M);
+        Eigen::Quaterniond q(eigMat);
+
+        std::vector<float> v(4);
+        v[0] = q.x();
+        v[1] = q.y();
+        v[2] = q.z();
+        v[3] = q.w();
+
+        return v;
     }
 
 

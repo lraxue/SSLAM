@@ -26,6 +26,8 @@ namespace SSLAM
 	int GlobalParameters::mnLevels = 0;
 	int GlobalParameters::mnFeatures = 0;
 	float GlobalParameters::mThDepth = 0.0f;
+	float GlobalParameters::mThAngle = 0.0f;
+	float GlobalParameters::mThMatch = 0.0f;
 
 	// For Viewer
 	float GlobalParameters::mKeyFrameSize = 0.0f;
@@ -35,8 +37,8 @@ namespace SSLAM
 	float GlobalParameters::mCameraSize = 0.0f;
 	float GlobalParameters::mCameraLineWidth = 0.0f;
 
-    float GlobalParameters::mImageWidth = 1280.0f;
-    float GlobalParameters::mImageHeight = 720.0f;
+    float GlobalParameters::mImageWidth = 1226.0f;
+    float GlobalParameters::mImageHeight = 370.0f;
 
     float GlobalParameters::mViewpointX = 0.0f;
     float GlobalParameters::mViewpointY = 0.0f;
@@ -63,6 +65,7 @@ namespace SSLAM
 		cx = fs["Camera.cx"];
 		cy = fs["Camera.cy"];
 		mbf = fs["Camera.bf"];
+		mb = mbf / fx;
 
 		fps = fs["Camera.fps"];
 
@@ -75,6 +78,8 @@ namespace SSLAM
 		mnFeatures = fs["ORBextractor.nFeatures"];
 		mnLevels = fs["ORBextractor.nLevels"];
 		mfScaleFactor = fs["ORBextractor.scaleFactor"];
+		iniThFAST = fs["ORBextractor.iniThFAST"];
+		minThFAST = fs["ORBextractor.minThFAST"];
 
 		mKeyFrameSize = fs["Viewer.KeyFrameSize"];
 		mKeyFrameLineWidth = fs["Viewer.KeyFrameLineWidth"];
@@ -88,7 +93,15 @@ namespace SSLAM
 		mViewpointZ = fs["Viewer.ViewpointZ"];
 		mViewpointF = fs["Viewer.ViewpointF"];
 
+		// Angle for observation uncertainty
+		mThAngle = fs["ThAngle"];
 
+		// Match threshold for matching uncertainty
+		mThMatch = std::pow(mfScaleFactor, mnLevels);  // Search range
+
+		LOG(INFO) << "fx: " << fx << " fy: " << fy << " cx: " << cx << " cy: " << cy << " mbf: " << mbf;
+		LOG(INFO) << "fps: " << fps << " ThDepth: " << mThDepth << " " << " scale factor: " << mfScaleFactor << " levels: " << mnLevels << " features: " << mnFeatures;
+		LOG(INFO) << "ThAngle: " << mThAngle << " ThMatch: " << mThMatch;
 
 	}
 }

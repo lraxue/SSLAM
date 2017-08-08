@@ -21,6 +21,16 @@ namespace SSLAM
     public:
         void ProcessNewKeyFrame(KeyFrame* pKF);
 
+    protected:
+        void FuseMapPoints();
+
+    protected:
+
+        KeyFrame* mpCurrentKeyFrame;   // Current KeyFrame
+
+        Map* mpMap;    // Global Map containing KeyFrames and MapPoints
+
+
     };
 }
 #endif //SSLAM_LOCALMAPPER_H

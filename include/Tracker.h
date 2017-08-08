@@ -11,6 +11,7 @@
 #include <KeyFrame.h>
 #include <FrameDrawer.h>
 #include <MapDrawer.h>
+#include <LocalMapper.h>
 
 namespace SSLAM
 {
@@ -25,7 +26,7 @@ namespace SSLAM
             LOST = 0,
         };
     public:
-        Tracker(FrameDrawer* pFrameDrawer, MapDrawer *pMapDrawer, Map* pMap);
+        Tracker(FrameDrawer* pFrameDrawer, MapDrawer *pMapDrawer, LocalMapper* pLocalMapper, Map* pMap);
         ~Tracker();
 
     public:
@@ -40,6 +41,9 @@ namespace SSLAM
 
 
         // Track local map
+        void UpdateLastFrame();
+        void UpdateCurrentFrame();   // Mainly add current frame to the related tracked MapPoints
+
         void UpdateLocalKeyFrames();
         void UpdateLocalMapPoints();
         void UpdateLocalMap();
@@ -48,6 +52,9 @@ namespace SSLAM
 
         // Create new KeyFrame
         void CreateNewKeyFrame();
+
+        // Create new KeyFrame based on track ability
+        void CreateNewKeyFrameBasedOnTrackAbility();
 
         // Stereo initialization
         bool StereoInitialization();
@@ -66,6 +73,7 @@ namespace SSLAM
 
         FrameDrawer* mpFrameDrawer;
         MapDrawer* mpMapDrawer;
+        LocalMapper* mpLocalMapper;
 
         KeyFrame* mpReferenceKF;
 

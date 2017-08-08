@@ -18,6 +18,16 @@ namespace SSLAM
         int static PoseOptimization(Frame *pFrame);
 
         void static LocalBundleAdjustment(KeyFrame* pKF, Map* pMap);
+
+
+        // Pose optimization on 3D points
+        int static OptimisePoseOn3DPoints(Frame &frame);
+
+        // Local bundle adjustment based on 3D points
+        void static LocalBundleAdjustmentBasedOn3DPoints(KeyFrame* pKF, Map* pMap);
+
+        // ICP solver
+        int static ICP(const std::vector<cv::Point3f>& vPoints1, const std::vector<cv::Point3f>& vPoints2, cv::Mat& R, cv::Mat& t, std::vector<bool>& vInliers);
     };
 }
 

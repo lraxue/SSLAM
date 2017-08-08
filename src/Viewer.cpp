@@ -42,12 +42,12 @@ namespace SSLAM
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         pangolin::OpenGlRenderState s_cam(
-                pangolin::ProjectionMatrix(1024, 768, mViewpointF, mViewpointF, 512, 389, 0.1, 1000),
+                pangolin::ProjectionMatrix(1280, 720, mViewpointF, mViewpointF, 640, 360, 0.1, 1000),
                 pangolin::ModelViewLookAt(mViewpointX, mViewpointY, mViewpointZ, 0, 0, 0, 0.0, -1.0, 0.0)
         );
 
         pangolin::View& d_cam = pangolin::CreateDisplay()
-                .SetBounds(0.0, 1.0, pangolin::Attach::Pix(175), 1.0, -1024.0f / 768.0f)
+                .SetBounds(0.0, 1.0, pangolin::Attach::Pix(175), 1.0, -1280.0f / 720.0f)
                 .SetHandler(new pangolin::Handler3D(s_cam));
 
         pangolin::OpenGlMatrix Twc;
@@ -73,10 +73,9 @@ namespace SSLAM
 
             cv::Mat im = mpFrameDrawer->DrawFrame();
             cv::Mat resizeIm;
-            cv::resize(im, resizeIm, cv::Size(640, 360));
+            cv::resize(im, resizeIm, cv::Size(1280, 360));
             cv::imshow("SSLAM: Current Frame", resizeIm);
             cv::waitKey(mT);
-
 
             if (Stop())
             {

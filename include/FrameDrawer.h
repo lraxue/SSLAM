@@ -38,6 +38,7 @@ namespace SSLAM
         std::vector<cv::KeyPoint> mvCurrentKeysRight;
         std::vector<cv::Point2f> mvCurrentProjectedKeysLeft;
         std::vector<cv::Point2f> mvCurrentProjectedKeysRight;
+        std::vector<int> mnObservations;
 
         std::vector<int> mvMatches;
         std::vector<bool> mvbMap;
@@ -47,6 +48,9 @@ namespace SSLAM
         Map* mpMap;
 
         unsigned long mnFrameId;
+
+        int mnImgWidth;
+        int mnImgHeight;
 
         std::mutex mMutex;
 

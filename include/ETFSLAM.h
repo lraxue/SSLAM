@@ -9,6 +9,7 @@
 #include <Frame.h>
 #include <Viewer.h>
 #include <Map.h>
+#include <LocalMapper.h>
 
 #include <GlobalParameters.h>
 
@@ -21,6 +22,7 @@ using namespace std;
 
 namespace SSLAM
 {
+
     class ETFSLAM
     {
     public:
@@ -28,15 +30,32 @@ namespace SSLAM
 
         ~ETFSLAM();
 
+
     public:
         void ProcessStereoImage(const cv::Mat& imLeft, const cv::Mat& imRight);
 
+        void Shutdown();
+
+        void SaveTrajectoryRotation(const std::string& strTrajectoryFile);
+
+        void SaveTrajectoryQuaternion(const std::string& strTrajectoryFile);
+
+    public:
+        /// Debugging functions
+        void SaveAngleCorrespondedToOneMapPoint(const std::string& strAngleFile);
+
+        /// Debugging functions
+
+        void SaveObservationsInfo(const std::string& strObservationFile);
+
+    public:
         Tracker* mpTracker;
 
         FrameDrawer* mpFrameDrawer;
         MapDrawer* mpMapDrawer;
 
         Viewer* mpViewer;
+        LocalMapper* mpLocalMapper;
 
         Map* mpMap;
 

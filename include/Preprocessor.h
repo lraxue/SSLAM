@@ -19,9 +19,13 @@ namespace SSLAM
                         std::vector<std::string>& vstrImageRight,
                         std::vector<double>& vTimeStamps);
 
-        void static LoadImages(const std::string& strImageSequencePath,
+        void static LoadImagesKitti(const std::string& strImageSequencePath,
                         std::vector<std::string>& vstrImageLeft,
                         std::vector<std::string>& vstrImageRight);
+
+        void static LoadImagesUisee(const std::string& strImageSequencePath,
+                                    std::vector<std::string>& vstrImageLeft,
+                                    std::vector<std::string>& vstrImageRight);
     };
 }
 #endif //SSLAM_PREPROCESSOR_H

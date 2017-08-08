@@ -25,13 +25,16 @@ namespace SSLAM
         cv::Mat GetPose() const;
 
         cv::Mat GetCameraCenter() const ;
-
         cv::Mat GetPoseInverse() const;
+        cv::Mat GetRotation() const;
+        cv::Mat GetTranslation() const;
+
 
         // MapPoint functions
         void AddMapPoint(MapPoint* pMP, const int& idx);
         void EraseMapPoint(MapPoint* pMP);
         void EraseMapPointByIndex(const int& idx);
+        void ReplaceMapPoint(const int& idx, MapPoint* pMP);
 
         // Covisibility functions
         void AddConnection(KeyFrame* pKF, const int& w);
@@ -39,13 +42,39 @@ namespace SSLAM
         std::map<KeyFrame*, int> GetAllConnectedKeyFrames() const;
         std::vector<KeyFrame*> GetCovisibilityKeyFramesByWeight(const int& w) const;
         std::vector<KeyFrame*> GetBestCovisibilityKeyFrames(const int& N) const;
-        std::vector<MapPoint*> GetMapPointMatches() const;
+        std::vector<MapPoint*> GetMapPointMatches();
         int GetWeight(KeyFrame* pKF);
 
         std::vector<KeyFrame*> GetVectorCovisibleKeyFrames();
 
         void UpdateConnections();
         void UpdateBestCovisibleKeyFrames();
+
+
+        // Compute reprojection error
+        cv::Point2f Project3DPointOnLeftImage(const int& idx);
+        float ComputeReprojectionError(const int& idx);
+        float ComputeReprojectionError(MapPoint* pMP);
+
+
+        static bool lId(KeyFrame* pKF1, KeyFrame* pKF2)
+        {
+            return pKF1->mnId < pKF2->mnId;
+        }
+
+        static bool weightComp(int a, int b)
+        {
+            return a > b;
+        }
+
+
+
+        // Fusion functions
+        bool IsInImage(const float& u, const float& v) const;
+        std::vector<int> SearchFeaturesInGrid(const float& cX, const float& cY, const float& radius, const int minLevel=-1, const int maxLevel=-1) const ;
+        MapPoint* GetMapPoint(const int& idx);
+
+
 
 
     protected:
@@ -56,6 +85,8 @@ namespace SSLAM
         // KeyFrame id
         unsigned long mnId;
         static unsigned long mnNext;
+
+        unsigned long mnFuseMapPointsForKF;
 
         const int N;
 

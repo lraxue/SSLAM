@@ -12,19 +12,53 @@ namespace SSLAM
     class EpipolarTriangle
     {
     public:
+        struct SUncertainty
+        {
+            float mResponseLeft;
+            float mResponseRight;
+            float mMatchCost;
+
+            // Constructor
+            SUncertainty(const float ResponseLeft, const float& ResponseRight, const float& MatchCost):
+                    mResponseLeft(ResponseLeft), mResponseRight(ResponseRight), mMatchCost(MatchCost)
+            {}
+
+            SUncertainty():mResponseLeft(0.f), mResponseRight(0.f), mMatchCost(0.f)
+            {}
+
+            // Deep copy
+            SUncertainty(const SUncertainty& Uncertainty)
+            {
+                this->mResponseLeft = Uncertainty.mResponseLeft;
+                this->mResponseRight = Uncertainty.mResponseRight;
+                this->mMatchCost = Uncertainty.mMatchCost;
+            }
+
+            float IntrinsicUncertainty()
+            {
+                return std::exp(mResponseLeft / 255.f + mResponseRight / 255.f - mMatchCost / (255 * 25.f));
+            }
+        };
+
+    public:
         // Constructor functions
         EpipolarTriangle();
-        EpipolarTriangle(const cv::Mat& normal, const float& d);
-        EpipolarTriangle(const cv::Point3f& p1, const cv::Point3f& p2, const cv::Point3f& p3);
+        EpipolarTriangle(const unsigned long& frameId, const cv::Mat& normal, const float& d);
+        EpipolarTriangle(const unsigned long& frameId, const cv::Mat& X, const cv::Mat& Cl, const cv::Mat& Cr);
+
+        // Extended Constructor functions
+        EpipolarTriangle(const unsigned long& frameId, const cv::Mat& X, const cv::Mat& Cl, cv::Mat& Cr, const SUncertainty& uncertainty);
 
         ~EpipolarTriangle();
 
     public:
+        cv::Mat GetX() const;
+
         cv::Mat GetNormal() const;
 
         cv::Mat GetRawNormal() const;
 
-        float GetDistance() const ;
+        float GetDistance() const;
 
         float GetRawDistance() const;
 
@@ -48,11 +82,37 @@ namespace SSLAM
          */
         float ComputeDistanceToVertex(const cv::Mat& x3Dw, const int& idx = 0);
 
+        // Get three angles of the triangle
+        float Angle1() const;
+        float Angle2() const;
+        float Angle3() const;
+
+    protected:
+        /**
+         * Compute three inner angles, as the structure of the triangle
+         */
+        void ComputeThreeAngles();
+
+
     public:
         unsigned long mnId;
         static unsigned long mnNext;
 
+        // Id of the Frame that creating this ETriangle
+        unsigned long mnFrameId;
+
+        // Uncertainty
+        SUncertainty mUncertainty;
+
     protected:
+        // Attributes
+        float mAngle1, mAngle2, mAngle3;  // Three angles: top-left-right
+
+        // Uncertainty defined on observation
+        float mObservation;
+
+
+
         // Parameters after transformation
         cv::Mat mNormal;
         float mD;

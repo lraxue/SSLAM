@@ -32,6 +32,8 @@ namespace SSLAM
                                                         mDescriptorsLeft(frame.mDescriptorsLeft.clone()),
                                                         mDescriptorsRight(mDescriptorsRight.clone()),
                                                         mvMatches(frame.mvMatches), mvuRight(frame.mvuRight),
+                                                        mvFeaturesInGrid(frame.mvFeaturesInGrid),
+                                                        //  mvpMapPoints(frame.mvpMapPoints),
                                                         mnScaleLevels(frame.mnScaleLevels), mfScaleFactor(frame.mfScaleFactor),
                                                         mfLogScaleFactor(frame.mfLogScaleFactor),
                                                         mvScaleFactors(frame.mvScaleFactors),
@@ -39,7 +41,8 @@ namespace SSLAM
                                                         mvInvScaleFactors(frame.mvInvScaleFactors),
                                                         mvLevelSigma2(frame.mvLevelSigma2),
                                                         mvInvLevelSigma2(frame.mvInvLevelSigma2),
-                                                        mnLocalBAForKF(0), mnLocalBAForFixedKF(0)
+                                                        mnLocalBAForKF(0), mnLocalBAForFixedKF(0),
+                                                        mnFuseMapPointsForKF(0)
     {
         if (!mbInitialization)
         {
@@ -82,8 +85,8 @@ namespace SSLAM
 //
 //        LOG(INFO) << "mTcw: " << mTcw;
 
-        mRcw = (mTcw.rowRange(0, 3).colRange(0, 3)).clone();
-        mtcw = (mTcw.rowRange(0, 3).col(3)).clone();
+        mRcw = mTcw.rowRange(0, 3).colRange(0, 3);
+        mtcw = mTcw.rowRange(0, 3).col(3);
 
         mOw = -mRcw.t() * mtcw;
 
@@ -101,6 +104,26 @@ namespace SSLAM
     cv::Mat KeyFrame::GetPose() const
     {
         return mTcw.clone();
+    }
+
+    cv::Mat KeyFrame::GetCameraCenter() const
+    {
+        return mOw.clone();
+    }
+
+    cv::Mat KeyFrame::GetPoseInverse() const
+    {
+        return mTwc.clone();
+    }
+
+    cv::Mat KeyFrame::GetRotation() const
+    {
+        return mRcw.clone();
+    }
+
+    cv::Mat KeyFrame::GetTranslation() const
+    {
+        return mtcw.clone();
     }
 
     void KeyFrame::UpdatePoseMatrix()
@@ -137,13 +160,20 @@ namespace SSLAM
         mvpMapPoints[idx] = static_cast<MapPoint*>(NULL);
     }
 
+    void KeyFrame::ReplaceMapPoint(const int &idx, MapPoint *pMP)
+    {
+        if (idx < 0 || idx >= N)
+            return;
+        mvpMapPoints[idx] = pMP;
+    }
+
     void KeyFrame::AddConnection(KeyFrame *pKF, const int &w)
     {
         if (!pKF) return;
 
         mConnectedKeyFramesWithWeights[pKF] = w;
 
-        UpdateConnections();
+        // UpdateConnections();
         UpdateBestCovisibleKeyFrames();
     }
 
@@ -168,7 +198,7 @@ namespace SSLAM
 
     std::vector<KeyFrame*> KeyFrame::GetCovisibilityKeyFramesByWeight(const int &w) const
     {
-        std::vector<int>::const_iterator up = std::upper_bound(mvOrderedWeights.begin(), mvOrderedWeights.end(), w);
+        std::vector<int>::const_iterator up = std::upper_bound(mvOrderedWeights.begin(), mvOrderedWeights.end(), w, KeyFrame::weightComp);
 
         int pos = up - mvOrderedWeights.begin();
         return std::vector<KeyFrame*>(mvOrderedNeighbors.begin(), mvOrderedNeighbors.begin() + pos);
@@ -184,14 +214,17 @@ namespace SSLAM
 
     void KeyFrame::UpdateConnections()
     {
+        LOG(INFO) << "Come into UpdateConnections.";
+
         std::map<KeyFrame*, int> mKFCounter;
 
         for (std::vector<MapPoint*>::const_iterator vit = mvpMapPoints.begin(), vend = mvpMapPoints.end(); vit != vend; vit++)
         {
             MapPoint* pMP = *vit;
-            if (!pMP) continue;
+            if (!pMP || pMP->IsBad()) continue;
 
             std::map<KeyFrame*, int> obs = pMP->GetAllObservations();
+
             if (obs.empty()) continue;
 
             for (std::map<KeyFrame*, int>::const_iterator mit = obs.begin(), mend = obs.end(); mit != mend; mit++)
@@ -200,16 +233,16 @@ namespace SSLAM
                     continue;
                 mKFCounter[mit->first]++;
             }
-
-            if (mKFCounter.empty())
-                return;
         }
+
+        if (mKFCounter.empty())
+            return;
 
        // if the counter greater than threshold then add connection
         int nmax = 0;
         KeyFrame* pKFmax = NULL;
 
-        int th = 25;
+        int th = 15;
         std::vector<std::pair<int, KeyFrame*> > vPairs;
         vPairs.reserve(mKFCounter.size());
         for (std::map<KeyFrame*, int>::const_iterator mit = mKFCounter.begin(), mend = mKFCounter.end(); mit != mend; mit++)
@@ -248,6 +281,8 @@ namespace SSLAM
         mConnectedKeyFramesWithWeights = mKFCounter;
         mvOrderedNeighbors = std::vector<KeyFrame*>(lKFs.begin(), lKFs.end());
         mvOrderedWeights = std::vector<int>(lWs.begin(), lWs.end());
+
+        // LOG(INFO) << "KeyFrame: " << mnId << " with neighbors " << mvOrderedNeighbors.size();
     }
 
     std::vector<KeyFrame*> KeyFrame::GetVectorCovisibleKeyFrames()
@@ -280,30 +315,126 @@ namespace SSLAM
         mvOrderedWeights = std::vector<int>(lWs.begin(), lWs.end());
     }
 
-    std::vector<MapPoint*> KeyFrame::GetMapPointMatches() const
+    std::vector<MapPoint*> KeyFrame::GetMapPointMatches()
     {
-       std::vector<MapPoint*> vMPs;
-        vMPs.reserve(N);
+        return mvpMapPoints;
+    }
 
-        for (int i = 0; i < N; ++i)
+    bool KeyFrame::IsInImage(const float &u, const float &v) const
+    {
+        if (u < 0 || u >= mnImgWidth)
+            return false;
+        else if (v < 0 || v >= mnImgHeight)
+            return false;
+        else
+            return true;
+    }
+
+    std::vector<int> KeyFrame::SearchFeaturesInGrid(const float &cX, const float &cY, const float &radius,
+                                                    const int minLevel, const int maxLevel) const
+    {
+        std::vector<int> vCandidates;
+        vCandidates.reserve(N);
+
+        const float fGridRowPerPixel = mnGridRows / (float)mnImgHeight;
+        const float fGridColPerPixel = mnGridCols / (float)mnImgWidth;
+
+        int minX = std::max(0.f, std::floor((cX - radius)*fGridColPerPixel));
+        int maxX = std::min((float)mnGridCols, std::ceil((cX + radius) * fGridColPerPixel));
+        int minY = std::max(0.f, std::floor((cY - radius) * fGridRowPerPixel));
+        int maxY = std::min((float)mnGridRows, std::ceil((cY + radius) * fGridRowPerPixel));
+
+        const bool bCheckLevels = (minLevel > 0) || (maxLevel >= 0);
+
+        for (int y = minY; y < maxY; ++y)
         {
-            MapPoint* pMP = mvpMapPoints[i];
-            if (!pMP) continue;
+            for (int x = minX; x < maxX; ++x)
+            {
+                const std::vector<int>& vCell = mvFeaturesInGrid[y][x];
 
-            vMPs.push_back(pMP);
+                int nGridSize = mvFeaturesInGrid[y][x].size();
+                for (int k = 0; k < nGridSize; ++k)
+                {
+                    const cv::KeyPoint& kp = mvKeysLeft[vCell[k]];
+                    if (bCheckLevels)
+                    {
+                        if (kp.octave < minLevel)
+                            continue;
+                        if (maxLevel >= 0)
+                            if (kp.octave > maxLevel)
+                                continue;
+                    }
+
+                    const float distx = kp.pt.x - cX;
+                    const float disty = kp.pt.y - cY;
+
+                    if (fabs(distx) < radius && fabs(disty) < radius)
+                        vCandidates.push_back(vCell[k]);
+                }
+            }
         }
 
-        return vMPs;
+        return vCandidates;
     }
 
-    cv::Mat KeyFrame::GetCameraCenter() const
+    MapPoint* KeyFrame::GetMapPoint(const int &idx)
     {
-        return mOw.clone();
+        if (idx < 0 || idx >= N)
+            return static_cast<MapPoint*>(NULL);
+
+        return mvpMapPoints[idx];
     }
 
-    cv::Mat KeyFrame::GetPoseInverse() const
+    cv::Point2f KeyFrame::Project3DPointOnLeftImage(const int &idx)
     {
-        return mTwc.clone();
+        if (idx < 0 || idx >= N) return cv::Point2f();   // out of range
+        if (!mvpMapPoints[idx]) return cv::Point2f();    // Not exist
+
+        const cv::Mat X3Dw = mvpMapPoints[idx]->GetPos();  // Global pose. Embarrassed!
+        const cv::Mat X3Dc = mRcw * X3Dw + mtcw;           // Camera coordinate. Excited!
+        const float invz = 1.0 / X3Dc.at<float>(2);
+        const float x = X3Dc.at<float>(0);
+        const float y = X3Dc.at<float>(1);
+
+        const float u = x * fx * invz + cx;
+        const float v = y * fy  * invz + cy;
+
+        return cv::Point2f(u, v);
+    }
+
+    float KeyFrame::ComputeReprojectionError(const int &idx)
+    {
+        if (idx < 0 || idx >= N)
+            return -1.0f;
+
+        MapPoint* pMP = mvpMapPoints[idx];
+
+        if (!pMP)
+            return -1.0f;
+        else if (mvuRight[idx] < 0)
+            return 1.0f;
+
+        const cv::Mat X3D = mvpMapPoints[idx]->GetPos();
+
+        cv::Point2f rp = Project3DPointOnLeftImage(idx);
+        const cv::Point& p = mvKeysLeft[idx].pt;
+
+        const float du = p.x - rp.x;
+        const float dv = p.y - rp.y;
+        const float dru = mvuRight[idx] - (rp.x - mbf / X3D.at<float>(2));
+        return sqrt(du * du + dv * dv + dru * dru);
+    }
+
+    float KeyFrame::ComputeReprojectionError(MapPoint *pMP)
+    {
+        if (!pMP)
+            return -1.0f;
+
+        const int idx = pMP->GetIndexInKeyFrame(this);
+        if (idx < 0)
+            return -1.0f;
+
+        return ComputeReprojectionError(idx);
     }
 
 

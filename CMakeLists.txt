@@ -31,7 +31,7 @@ LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 set(OpenCV_DIR "/opt/opencv2/share/OpenCV")
 
 find_package(OpenCV 2.4.10 REQUIRED)
-set(OpenCV_INCLUDE_DIRS "/opt/opencv2/include/opencv" "/opt/opencv2/include")
+#set(OpenCV_INCLUDE_DIRS "/opt/opencv2/include/opencv" "/opt/opencv2/include")
 message(STATUS "${OpenCV_INCLUDE_DIRS}")
 #find_package(OpenCV 3.0 QUIET)
 #if (NOT OpenCV_FOUND)
@@ -57,7 +57,7 @@ include_directories(
 
 add_executable(${PROJECT_NAME}
         src/Monitor.cpp
-        src/main.cpp
+        src/Main.cpp
         src/GlobalParameters.cpp
         src/ORBextractor.cpp
         src/ORBmatcher.cpp
@@ -67,7 +67,16 @@ add_executable(${PROJECT_NAME}
         src/Map.cpp
         src/Tracker.cpp
         src/Optimizer.cpp
-        src/Converter.cpp src/KeyFrame.cpp src/EpipolarTriangle.cpp src/FrameDrawer.cpp src/MapDrawer.cpp src/Viewer.cpp src/ETFSLAM.cpp)
+        src/Converter.cpp
+        src/KeyFrame.cpp
+        src/EpipolarTriangle.cpp
+        src/FrameDrawer.cpp
+        src/MapDrawer.cpp
+        src/Viewer.cpp
+        src/ETFSLAM.cpp
+        src/Test.cpp
+        src/LocalMapper.cpp
+        src/FeatureDetector.cpp src/ImageProcessor.cpp)
 
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}
