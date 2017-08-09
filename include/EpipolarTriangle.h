@@ -46,6 +46,10 @@ namespace SSLAM
         EpipolarTriangle(const unsigned long& frameId, const cv::Mat& normal, const float& d);
         EpipolarTriangle(const unsigned long& frameId, const cv::Mat& X, const cv::Mat& Cl, const cv::Mat& Cr);
 
+        // Extended constructor functions
+        EpipolarTriangle(const unsigned long& frameId, const cv::Mat& X, const cv::Mat& Cl, const cv::Mat& Cr,
+                         const cv::KeyPoint& keyLeft, const cv::KeyPoint& keyRight, const float& depth, const float& uRight);
+
         // Extended Constructor functions
         EpipolarTriangle(const unsigned long& frameId, const cv::Mat& X, const cv::Mat& Cl, cv::Mat& Cr, const SUncertainty& uncertainty);
 
@@ -87,11 +91,31 @@ namespace SSLAM
         float Angle2() const;
         float Angle3() const;
 
+
+        // Get uncertainty
+        float Uncertainty() const;
+
+        // Coordinate in left and right image
+        cv::Point2f PointLeft() const;
+        cv::Point2f PointRight() const;
+
+        // Descriptor in left and right image
+        cv::Mat DescriptorLeft() const;
+        cv::Mat DescriptorRight() const;
+
     protected:
         /**
          * Compute three inner angles, as the structure of the triangle
          */
         void ComputeThreeAngles();
+
+        /**
+         * Compute normal and distance
+         */
+
+        void ComputeNormalAndDistance();
+
+        void ComputeUncertainty();
 
 
     public:
@@ -105,12 +129,29 @@ namespace SSLAM
         SUncertainty mUncertainty;
 
     protected:
+        // Basic information
+        cv::KeyPoint mKeyLeft, mKeyRight;
+        cv::Mat mDescLeft, mDescRight;
+        float mDepth;
+        float muRight;
+
+        // Uncertainty
+        float mResponse;
+        float mMatchRatio;
+        float mAngleRatio;
+        float mFusedUncertainty;
+
         // Attributes
         float mAngle1, mAngle2, mAngle3;  // Three angles: top-left-right
 
         // Uncertainty defined on observation
         float mObservation;
 
+        // Parameters
+        static float mMatchTheta;
+        static float mAngleTheta;
+        static float alphaF, alphaA, alphaM;
+        static bool bInitialization;
 
 
         // Parameters after transformation

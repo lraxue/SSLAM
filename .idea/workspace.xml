@@ -12,22 +12,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4db88568-2487-49bc-a10c-fd1289ca5a55" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/0.png" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/EpipolarTriangle.h" afterPath="$PROJECT_DIR$/include/EpipolarTriangle.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/Frame.h" afterPath="$PROJECT_DIR$/include/Frame.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/FrameDrawer.h" afterPath="$PROJECT_DIR$/include/FrameDrawer.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/GlobalParameters.h" afterPath="$PROJECT_DIR$/include/GlobalParameters.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/Monitor.h" afterPath="$PROJECT_DIR$/include/Monitor.h" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/Values.h" afterPath="$PROJECT_DIR$/include/Values.h" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/include/Optimizer.h" afterPath="$PROJECT_DIR$/include/Optimizer.h" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/EpipolarTriangle.cpp" afterPath="$PROJECT_DIR$/src/EpipolarTriangle.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Frame.cpp" afterPath="$PROJECT_DIR$/src/Frame.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/FrameDrawer.cpp" afterPath="$PROJECT_DIR$/src/FrameDrawer.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/GlobalParameters.cpp" afterPath="$PROJECT_DIR$/src/GlobalParameters.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Main.cpp" afterPath="$PROJECT_DIR$/src/Main.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Monitor.cpp" afterPath="$PROJECT_DIR$/src/Monitor.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Test.cpp" afterPath="$PROJECT_DIR$/src/Test.cpp" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Tracker.cpp" afterPath="$PROJECT_DIR$/src/Tracker.cpp" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -46,40 +34,8 @@
       <file leaf-file-name="Main.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="312">
+            <state relative-caret-position="0">
               <caret line="53" column="23" lean-forward="false" selection-start-line="53" selection-start-column="23" selection-end-line="53" selection-end-column="23" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ETFSLAM.cpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/ETFSLAM.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="156">
-              <caret line="49" column="24" lean-forward="false" selection-start-line="49" selection-start-column="24" selection-end-line="49" selection-end-column="24" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GlobalParameters.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/GlobalParameters.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1144">
-              <caret line="25" column="0" lean-forward="false" selection-start-line="25" selection-start-column="0" selection-end-line="27" selection-end-column="6" />
-              <folding>
-                <marker date="1501851129561" expanded="true" signature="324:396" ph="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="GlobalParameters.cpp" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/GlobalParameters.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1200">
-              <caret line="103" column="73" lean-forward="false" selection-start-line="103" selection-start-column="73" selection-end-line="103" selection-end-column="73" />
               <folding />
             </state>
           </provider>
@@ -88,8 +44,8 @@
       <file leaf-file-name="Frame.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/include/Frame.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1687">
-              <caret line="87" column="5" lean-forward="true" selection-start-line="87" selection-start-column="5" selection-end-line="87" selection-end-column="5" />
+            <state relative-caret-position="145">
+              <caret line="125" column="29" lean-forward="true" selection-start-line="125" selection-start-column="29" selection-end-line="125" selection-end-column="29" />
               <folding>
                 <element signature="e#107#132#0" expanded="true" />
               </folding>
@@ -97,21 +53,60 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="Frame.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/Frame.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="213">
+              <caret line="80" column="38" lean-forward="true" selection-start-line="80" selection-start-column="38" selection-end-line="80" selection-end-column="38" />
+              <folding>
+                <element signature="e#79#97#0" expanded="true" />
+                <element signature="e#5571#5672#0" expanded="true" />
+                <element signature="e#11391#12039#0" expanded="false" />
+                <element signature="e#13603#13693#0" expanded="false" />
+                <element signature="e#13699#13770#0" expanded="false" />
+                <element signature="e#13776#13858#0" expanded="false" />
+                <element signature="e#13864#13942#0" expanded="false" />
+                <element signature="e#13945#14104#0" expanded="false" />
+                <element signature="e#14107#14539#0" expanded="false" />
+                <element signature="e#14542#15657#0" expanded="false" />
+                <element signature="e#17999#18607#0" expanded="false" />
+                <element signature="e#18613#19002#0" expanded="false" />
+                <element signature="e#19005#20418#0" expanded="false" />
+                <element signature="e#20422#22039#0" expanded="false" />
+                <element signature="e#27362#27554#0" expanded="true" />
+                <element signature="e#28024#28211#0" expanded="true" />
+                <element signature="e#30833#31980#0" expanded="false" />
+                <marker date="1501922872379" expanded="true" signature="5385:5416" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Optimizer.h" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/include/Optimizer.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="250">
+              <caret line="23" column="66" lean-forward="false" selection-start-line="23" selection-start-column="66" selection-end-line="23" selection-end-column="66" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="ORBextractor.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ORBextractor.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="284">
+            <state relative-caret-position="9240">
               <caret line="420" column="48" lean-forward="false" selection-start-line="420" selection-start-column="48" selection-end-line="420" selection-end-column="48" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Tracker.cpp" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Tracker.cpp" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Tracker.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-650">
-              <caret line="50" column="18" lean-forward="false" selection-start-line="50" selection-start-column="18" selection-end-line="50" selection-end-column="18" />
+            <state relative-caret-position="242">
+              <caret line="36" column="5" lean-forward="true" selection-start-line="36" selection-start-column="5" selection-end-line="36" selection-end-column="5" />
               <folding>
                 <element signature="e#40#60#0" expanded="true" />
                 <element signature="e#658#689#0" expanded="false" />
@@ -134,18 +129,8 @@
       <file leaf-file-name="KITTI04-12.yaml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Stereo/KITTI04-12.yaml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-68">
+            <state relative-caret-position="704">
               <caret line="32" column="0" lean-forward="false" selection-start-line="32" selection-start-column="0" selection-end-line="38" selection-end-column="11" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="FrameDrawer.h" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/FrameDrawer.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="888">
-              <caret line="51" column="12" lean-forward="false" selection-start-line="51" selection-start-column="12" selection-end-line="51" selection-end-column="12" />
               <folding />
             </state>
           </provider>
@@ -154,8 +139,8 @@
       <file leaf-file-name="KITTI00-02.yaml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Stereo/KITTI00-02.yaml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-598">
-              <caret line="28" column="0" lean-forward="true" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+            <state relative-caret-position="616">
+              <caret line="28" column="0" lean-forward="false" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -195,7 +180,6 @@
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/src/Viewer.cpp" />
         <option value="$PROJECT_DIR$/include/ExtendedG2O.h" />
-        <option value="$PROJECT_DIR$/include/Optimizer.h" />
         <option value="$PROJECT_DIR$/src/Optimizer.cpp" />
         <option value="$PROJECT_DIR$/include/ETFSLAM.h" />
         <option value="$PROJECT_DIR$/include/KeyFrame.h" />
@@ -214,14 +198,12 @@
         <option value="$PROJECT_DIR$/include/Test.h" />
         <option value="$PROJECT_DIR$/src/Test.cpp" />
         <option value="$PROJECT_DIR$/src/Tracker.cpp" />
-        <option value="$PROJECT_DIR$/src/EpipolarTriangle.cpp" />
         <option value="$PROJECT_DIR$/include/Monitor.h" />
         <option value="$PROJECT_DIR$/include/FrameDrawer.h" />
         <option value="$PROJECT_DIR$/Stereo/pku-desk.yaml" />
         <option value="$PROJECT_DIR$/include/Values.h" />
         <option value="$PROJECT_DIR$/src/FrameDrawer.cpp" />
         <option value="$PROJECT_DIR$/Stereo/KITTI03.yaml" />
-        <option value="$PROJECT_DIR$/include/EpipolarTriangle.h" />
         <option value="$PROJECT_DIR$/src/GlobalParameters.cpp" />
         <option value="$PROJECT_DIR$/include/GlobalParameters.h" />
         <option value="$PROJECT_DIR$/include/Frame.h" />
@@ -230,6 +212,9 @@
         <option value="$PROJECT_DIR$/src/Frame.cpp" />
         <option value="$PROJECT_DIR$/Stereo/KITTI00-02.yaml" />
         <option value="$PROJECT_DIR$/src/Main.cpp" />
+        <option value="$PROJECT_DIR$/include/EpipolarTriangle.h" />
+        <option value="$PROJECT_DIR$/src/EpipolarTriangle.cpp" />
+        <option value="$PROJECT_DIR$/include/Optimizer.h" />
       </list>
     </option>
   </component>
@@ -241,10 +226,9 @@
   </component>
   <component name="OCFindUsagesOptions" text="false" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds">
-    <option name="x" value="65" />
-    <option name="y" value="-6" />
-    <option name="width" value="1855" />
-    <option name="height" value="1086" />
+    <option name="y" value="23" />
+    <option name="width" value="1600" />
+    <option name="height" value="837" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="1" id="Add" />
@@ -611,11 +595,12 @@
       <workItem from="1500557064910" duration="55113000" />
       <workItem from="1500963431115" duration="622000" />
       <workItem from="1500981048472" duration="71096000" />
+      <workItem from="1502244436454" duration="5327000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="442722000" />
+    <option name="totallyTimeSpent" value="448049000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -627,27 +612,27 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-6" width="1855" height="1086" extended-state="7" />
+    <frame x="0" y="23" width="1600" height="837" extended-state="0" />
     <editor active="true" />
     <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17125" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.28134558" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33071896" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20285423" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32925585" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.09703504" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.42813456" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33639145" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33639145" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.42813456" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -815,13 +800,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/Optimizer.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="338">
-          <caret line="27" column="0" lean-forward="false" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Optimizer.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17550">
@@ -836,9 +814,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="364">
           <caret line="14" column="14" lean-forward="false" selection-start-line="14" selection-start-column="14" selection-end-line="14" selection-end-column="14" />
-          <folding>
-            <element signature="e#118#136#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -847,7 +822,7 @@
         <state relative-caret-position="4498">
           <caret line="173" column="30" lean-forward="false" selection-start-line="173" selection-start-column="30" selection-end-line="173" selection-end-column="30" />
           <folding>
-            <element signature="e#39#56#0" expanded="true" />
+            <element signature="e#39#56#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -883,7 +858,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="470">
           <caret line="98" column="132" lean-forward="false" selection-start-line="98" selection-start-column="85" selection-end-line="98" selection-end-column="132" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -903,19 +877,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/EpipolarTriangle.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1222">
-          <caret line="50" column="5" lean-forward="false" selection-start-line="50" selection-start-column="5" selection-end-line="50" selection-end-column="5" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/include/Values.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="267">
           <caret line="20" column="56" lean-forward="false" selection-start-line="20" selection-start-column="56" selection-end-line="20" selection-end-column="56" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -923,7 +888,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="316">
           <caret line="28" column="0" lean-forward="true" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -931,7 +895,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="134">
           <caret line="332" column="1" lean-forward="true" selection-start-line="332" selection-start-column="1" selection-end-line="332" selection-end-column="1" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -945,19 +908,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/EpipolarTriangle.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="279">
-          <caret line="101" column="32" lean-forward="false" selection-start-line="101" selection-start-column="32" selection-end-line="101" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Stereo/pku-desk.yaml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="333">
           <caret line="50" column="26" lean-forward="true" selection-start-line="50" selection-start-column="26" selection-end-line="50" selection-end-column="26" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -965,13 +919,12 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="232">
           <caret line="97" column="11" lean-forward="false" selection-start-line="97" selection-start-column="11" selection-end-line="97" selection-end-column="11" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/GlobalParameters.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1200">
+        <state relative-caret-position="2266">
           <caret line="103" column="73" lean-forward="false" selection-start-line="103" selection-start-column="73" selection-end-line="103" selection-end-column="73" />
           <folding />
         </state>
@@ -979,7 +932,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/include/GlobalParameters.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1144">
+        <state relative-caret-position="550">
           <caret line="25" column="0" lean-forward="false" selection-start-line="25" selection-start-column="0" selection-end-line="27" selection-end-column="6" />
           <folding>
             <marker date="1501851129561" expanded="true" signature="324:396" ph="..." />
@@ -987,20 +940,114 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/include/FrameDrawer.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1122">
+          <caret line="51" column="12" lean-forward="false" selection-start-line="51" selection-start-column="12" selection-end-line="51" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ORBextractor.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9240">
+          <caret line="420" column="48" lean-forward="false" selection-start-line="420" selection-start-column="48" selection-end-line="420" selection-end-column="48" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Stereo/KITTI04-12.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="704">
+          <caret line="32" column="0" lean-forward="false" selection-start-line="32" selection-start-column="0" selection-end-line="38" selection-end-column="11" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Monitor.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="836">
+          <caret line="519" column="44" lean-forward="true" selection-start-line="519" selection-start-column="44" selection-end-line="519" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Stereo/KITTI00-02.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="616">
+          <caret line="28" column="0" lean-forward="false" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="53" column="23" lean-forward="false" selection-start-line="53" selection-start-column="23" selection-end-line="53" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ETFSLAM.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1078">
+          <caret line="49" column="24" lean-forward="false" selection-start-line="49" selection-start-column="24" selection-end-line="49" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Tracker.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="242">
+          <caret line="36" column="5" lean-forward="true" selection-start-line="36" selection-start-column="5" selection-end-line="36" selection-end-column="5" />
+          <folding>
+            <element signature="e#40#60#0" expanded="true" />
+            <element signature="e#658#689#0" expanded="false" />
+            <element signature="e#9619#11361#0" expanded="false" />
+            <element signature="e#14049#15042#0" expanded="false" />
+            <element signature="e#15048#16063#0" expanded="false" />
+            <element signature="e#16181#17264#0" expanded="false" />
+            <marker date="1500879129008" expanded="true" signature="3520:3580" ph="..." />
+            <marker date="1500879129008" expanded="false" signature="6872:6932" ph="..." />
+            <marker date="1500879129008" expanded="true" signature="12710:12755" ph="..." />
+            <marker date="1500879129008" expanded="true" signature="13495:13540" ph="..." />
+            <marker date="1500879129008" expanded="false" signature="18671:18716" ph="..." />
+            <marker date="1500879129008" expanded="false" signature="19733:19778" ph="..." />
+            <marker date="1500879129008" expanded="false" signature="24341:24386" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/include/Frame.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1687">
-          <caret line="87" column="5" lean-forward="true" selection-start-line="87" selection-start-column="5" selection-end-line="87" selection-end-column="5" />
+        <state relative-caret-position="145">
+          <caret line="125" column="29" lean-forward="true" selection-start-line="125" selection-start-column="29" selection-end-line="125" selection-end-column="29" />
           <folding>
             <element signature="e#107#132#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/include/EpipolarTriangle.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-944">
+          <caret line="103" column="40" lean-forward="false" selection-start-line="103" selection-start-column="40" selection-end-line="103" selection-end-column="40" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/EpipolarTriangle.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="81">
+          <caret line="89" column="5" lean-forward="true" selection-start-line="89" selection-start-column="5" selection-end-line="89" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/Frame.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="390">
-          <caret line="168" column="11" lean-forward="false" selection-start-line="168" selection-start-column="11" selection-end-line="168" selection-end-column="11" />
+        <state relative-caret-position="213">
+          <caret line="80" column="38" lean-forward="true" selection-start-line="80" selection-start-column="38" selection-end-line="80" selection-end-column="38" />
           <folding>
             <element signature="e#79#97#0" expanded="true" />
             <element signature="e#5571#5672#0" expanded="true" />
@@ -1024,81 +1071,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/FrameDrawer.h">
+    <entry file="file://$PROJECT_DIR$/include/Optimizer.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="888">
-          <caret line="51" column="12" lean-forward="false" selection-start-line="51" selection-start-column="12" selection-end-line="51" selection-end-column="12" />
+        <state relative-caret-position="250">
+          <caret line="23" column="66" lean-forward="false" selection-start-line="23" selection-start-column="66" selection-end-line="23" selection-end-column="66" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ORBextractor.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="284">
-          <caret line="420" column="48" lean-forward="false" selection-start-line="420" selection-start-column="48" selection-end-line="420" selection-end-column="48" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Stereo/KITTI04-12.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-68">
-          <caret line="32" column="0" lean-forward="false" selection-start-line="32" selection-start-column="0" selection-end-line="38" selection-end-column="11" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Monitor.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="836">
-          <caret line="519" column="44" lean-forward="true" selection-start-line="519" selection-start-column="44" selection-end-line="519" selection-end-column="44" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Stereo/KITTI00-02.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-598">
-          <caret line="28" column="0" lean-forward="true" selection-start-line="28" selection-start-column="0" selection-end-line="28" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Main.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="53" column="23" lean-forward="false" selection-start-line="53" selection-start-column="23" selection-end-line="53" selection-end-column="23" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ETFSLAM.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="156">
-          <caret line="49" column="24" lean-forward="false" selection-start-line="49" selection-start-column="24" selection-end-line="49" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Tracker.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-650">
-          <caret line="50" column="18" lean-forward="false" selection-start-line="50" selection-start-column="18" selection-end-line="50" selection-end-column="18" />
-          <folding>
-            <element signature="e#40#60#0" expanded="true" />
-            <element signature="e#658#689#0" expanded="false" />
-            <element signature="e#9619#11361#0" expanded="false" />
-            <element signature="e#14049#15042#0" expanded="false" />
-            <element signature="e#15048#16063#0" expanded="false" />
-            <element signature="e#16181#17264#0" expanded="false" />
-            <marker date="1500879129008" expanded="true" signature="3520:3580" ph="..." />
-            <marker date="1500879129008" expanded="false" signature="6872:6932" ph="..." />
-            <marker date="1500879129008" expanded="true" signature="12710:12755" ph="..." />
-            <marker date="1500879129008" expanded="true" signature="13495:13540" ph="..." />
-            <marker date="1500879129008" expanded="false" signature="18671:18716" ph="..." />
-            <marker date="1500879129008" expanded="false" signature="19733:19778" ph="..." />
-            <marker date="1500879129008" expanded="false" signature="24341:24386" ph="..." />
-          </folding>
         </state>
       </provider>
     </entry>

@@ -19,6 +19,12 @@ namespace SSLAM
 
         void static LocalBundleAdjustment(KeyFrame* pKF, Map* pMap);
 
+        // Bundle adjustment with uncertainty
+
+        int static PoseOptimizationWithUncertainty(Frame* pFrame);
+
+        void static LocalBundleAdjustmentWithUncertainty(KeyFrame* pKF, Map* pMap);
+
 
         // Pose optimization on 3D points
         int static OptimisePoseOn3DPoints(Frame &frame);

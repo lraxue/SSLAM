@@ -3,6 +3,7 @@
 //
 
 #include <EpipolarTriangle.h>
+#include <GlobalParameters.h>
 
 #include <Eigen/Eigen>
 #include <glog/logging.h>
@@ -10,6 +11,14 @@
 namespace SSLAM
 {
     unsigned long EpipolarTriangle::mnNext = 0;
+
+    float EpipolarTriangle::mMatchTheta = 1.f;
+    float EpipolarTriangle::mAngleTheta = 1.f;
+    float EpipolarTriangle::alphaF = 1.f;
+    float EpipolarTriangle::alphaA = 1.f;
+    float EpipolarTriangle::alphaM = 1.f;
+
+    bool EpipolarTriangle::bInitialization = false;
 
     EpipolarTriangle::EpipolarTriangle()
     {}
@@ -33,20 +42,46 @@ namespace SSLAM
         mCl = Cl.clone();
         mCr = Cr.clone();
 
-        // Normal and distance
-        cv::Mat X12 = mCl - mX;
-        cv::Mat X13 = mCl - mCr;
-
-        cv::Mat normal = X12.cross(X13);
-
-        mNormal = normal / cv::norm(normal);
-        mD = cv::norm(mX.t() * mNormal);
-
-        mRawNormal = mNormal;
-        mRawD = mD;
+        // Compute normal and distance
+        // ComputeNormalAndDistance();
 
         // Compute three angles
         ComputeThreeAngles();
+
+        // Compute intrinsic uncertainty
+//        ComputeUncertainty();
+
+    }
+
+    EpipolarTriangle::EpipolarTriangle(const unsigned long &frameId, const cv::Mat &X, const cv::Mat &Cl,
+                                       const cv::Mat &Cr, const cv::KeyPoint &keyLeft, const cv::KeyPoint &keyRight,
+                                       const float &depth, const float &uRight)
+            : mX(X.clone()), mCl(Cl.clone()), mCr(Cr.clone()), mKeyLeft(keyLeft), mKeyRight(keyRight), mDepth(depth), muRight(uRight)
+
+    {
+        mnId = mnNext++;
+        mnFrameId = frameId;
+
+        if (!bInitialization)
+        {
+            mMatchTheta = GlobalParameters::mThMatch;
+            mAngleTheta = GlobalParameters::mThAngle;
+
+            alphaM = 0.3;
+            alphaF = 0.5;
+            alphaA = 0.2;
+
+            bInitialization = true;
+        }
+
+        // Compute normal and distance
+        ComputeNormalAndDistance();
+
+        // Compute three angles
+        ComputeThreeAngles();
+
+        // Compute uncertainty
+        ComputeUncertainty();
 
     }
 
@@ -158,6 +193,37 @@ namespace SSLAM
             return x3Dw.dot(mCr);
     }
 
+    void EpipolarTriangle::ComputeNormalAndDistance()
+    {
+        cv::Mat X12 = mCl - mX;
+        cv::Mat X13 = mCl - mCr;
+
+        cv::Mat normal = X12.cross(X13);
+
+        mNormal = normal / cv::norm(normal);
+        mD = cv::norm(mX.t() * mNormal);
+
+        mRawNormal = mNormal;
+        mRawD = mD;
+    }
+
+    void EpipolarTriangle::ComputeUncertainty()
+    {
+        // Compute feature uncertainty
+        const float rl = mKeyLeft.response / 255.f;
+        const float rr = mKeyRight.response / 255.f;
+        mResponse = (rl + rr) / 2.f;
+
+        // Match error
+        mMatchRatio = abs(mKeyLeft.pt.y - mKeyRight.pt.y) / mMatchTheta;
+
+        // Observation uncertainty
+        mAngleRatio = mAngle1 / mAngleTheta;
+
+        // Fuse uncertainty
+        mFusedUncertainty = std::exp(alphaF * mResponse + alphaA * mAngleRatio - alphaM * mMatchRatio);
+    }
+
     void EpipolarTriangle::ComputeThreeAngles()
     {
         cv::Mat e12 = mX - mCl;
@@ -180,6 +246,7 @@ namespace SSLAM
 
     }
 
+
     float EpipolarTriangle::Angle1() const
     {
         return mAngle1;
@@ -194,6 +261,33 @@ namespace SSLAM
     {
         return mAngle3;
     }
+
+    float EpipolarTriangle::Uncertainty() const
+    {
+        return mFusedUncertainty;
+    }
+
+    cv::Point2f EpipolarTriangle::PointLeft() const
+    {
+        return mKeyLeft.pt;
+    }
+
+    cv::Point2f EpipolarTriangle::PointRight() const
+    {
+        return mKeyRight.pt;
+    }
+
+    cv::Mat EpipolarTriangle::DescriptorLeft() const
+    {
+        return mDescLeft.clone();
+    }
+
+    cv::Mat EpipolarTriangle::DescriptorRight() const
+    {
+        return mDescRight.clone();
+    }
+
+
 
 }
 
