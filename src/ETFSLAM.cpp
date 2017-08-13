@@ -21,7 +21,7 @@ namespace SSLAM
 
         mpViewer = new Viewer(mpFrameDrawer, mpMapDrawer, mpTracker);
 
-        ptrViewerThread = new thread(&Viewer::Run, mpViewer);
+        // ptrViewerThread = new thread(&Viewer::Run, mpViewer);
     }
 
     ETFSLAM::~ETFSLAM()
@@ -47,7 +47,8 @@ namespace SSLAM
 
     void ETFSLAM::ProcessStereoImage(const cv::Mat &imLeft, const cv::Mat &imRight)
     {
-        mpTracker->GrabStereo(imLeft, imRight);
+        GenerateFrame(imLeft, imRight);
+        // mpTracker->GrabStereo(imLeft, imRight);
     }
 
     void ETFSLAM::Shutdown()
@@ -94,6 +95,52 @@ namespace SSLAM
         file.close();
 
         LOG(INFO) << "Trajectory saved!";
+    }
+
+    void ETFSLAM::GenerateFrame(const cv::Mat &imLeft, const cv::Mat &imRight)
+    {
+        Frame frame = Frame(imLeft, imRight);
+        frame.SetPose(mvTcws[frame.mnId]);
+        frame.GenerateAllMapPoints();
+        mvFrames.push_back(frame);
+    }
+
+    void ETFSLAM::LoadGroundTruthKitti(const std::string &filename)
+    {
+        mvTcws.clear();
+
+        std::fstream file(filename.c_str(), std::ios::in);
+        if (!file.is_open())
+        {
+            LOG(ERROR) << "Open file " << filename << " error.";
+        }
+
+        while (!file.eof())
+        {
+            std::string line;
+            getline(file, line);
+
+            stringstream ss;
+            ss << line;
+
+            cv::Mat Rwc = cv::Mat(3, 3, CV_32F);
+            cv::Mat twc = cv::Mat(3, 1, CV_32F);
+
+            ss >> Rwc.at<float>(0, 0) >> Rwc.at<float>(0, 1) >> Rwc.at<float>(0, 2) >> twc.at<float>(0)
+               >> Rwc.at<float>(1, 0) >> Rwc.at<float>(1, 1) >> Rwc.at<float>(1, 2) >> twc.at<float>(1)
+               >> Rwc.at<float>(2, 0) >> Rwc.at<float>(2, 1) >> Rwc.at<float>(2, 2) >> twc.at<float>(2);
+
+            cv::Mat Rcw = Rwc.t();
+            cv::Mat tcw = -Rwc.t() * twc;
+            cv::Mat Tcw = cv::Mat::ones(4, 4, CV_32F);
+            Rcw.copyTo(Tcw.rowRange(0, 3).colRange(0, 3));
+            tcw.copyTo(Tcw.rowRange(0, 3).col(3));
+            mvTcws.push_back(Tcw);
+        }
+
+        file.close();
+
+        LOG(INFO) << "Load groundtruth from file " << filename << " finished.";
     }
 
     void ETFSLAM::SaveAngleCorrespondedToOneMapPoint(const std::string& strAngleFile)

@@ -128,7 +128,6 @@ namespace SSLAM
         // Uncertainty
         SUncertainty mUncertainty;
 
-    protected:
         // Basic information
         cv::KeyPoint mKeyLeft, mKeyRight;
         cv::Mat mDescLeft, mDescRight;

@@ -157,6 +157,32 @@ namespace SSLAM
 
     }
 
+    int Optimizer::OptimizePoseWithUncertainty(Frame& frame)
+    {
+        g2o::SparseOptimizer optimizer;
+        g2o::BlockSolver_6_3::LinearSolverType* linearSolver;
+
+        linearSolver = new g2o::LinearSolverDense<g2o::BlockSolver_6_3::PoseMatrixType>();
+
+        g2o::BlockSolver_6_3* solver_ptr = new g2o::BlockSolver_6_3(linearSolver);
+
+        g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+
+        optimizer.setAlgorithm(solver);
+
+        int nInitilaMatchedPoints = 0;
+
+        // Set Frame vertex
+        g2o::VertexSE3Expmap* vSE3 = new g2o::VertexSE3Expmap();
+        vSE3->setEstimate(Converter::toSE3Quat(frame.mTcw));
+        vSE3->setId(0);
+        vSE3->setFixed(false);
+        optimizer.addVertex(vSE3);
+
+        // Set MapPoint vertices
+        // TODO
+    }
+
     int Optimizer::PoseOptimization(Frame *pFrame) {
         g2o::SparseOptimizer optimizer;
         g2o::BlockSolver_6_3::LinearSolverType *linearSolver;
@@ -307,6 +333,7 @@ namespace SSLAM
 
                 const float chi2 = e->chi2();
 
+                // chi2() == information * error
                 if (chi2 > chi2Mono[it]) {
                     pFrame->mvbOutliers[idx] = true;
                     e->setLevel(1);

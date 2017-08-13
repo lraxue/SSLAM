@@ -55,11 +55,12 @@ namespace SSLAM
 		static const int TH_HIGH;
 		static const int HISTO_LENGTH;
 
-	protected:
+	public:
 		float RadiusByViewingCos(const float &viewCos);
 
 		void ComputeThreeMaxima(std::vector<int>* histo, const int L, int &ind1, int &ind2, int &ind3);
 
+	protected:
 		float mfNNratio;
 		bool mbCheckOrientation;
 	};

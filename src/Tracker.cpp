@@ -48,6 +48,8 @@ namespace SSLAM
         return mCurrentFrame.mTcw;
     }
 
+
+
     void Tracker::Track()
     {
         bool bOK;

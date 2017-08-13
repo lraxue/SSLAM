@@ -49,6 +49,7 @@ find_package(Ceres REQUIRED)
 include_directories(
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/Analysis
         ${EIGEN3_INCLUDE_DIR}
         ${Pangolin_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
@@ -76,7 +77,8 @@ add_executable(${PROJECT_NAME}
         src/ETFSLAM.cpp
         src/Test.cpp
         src/LocalMapper.cpp
-        src/FeatureDetector.cpp src/ImageProcessor.cpp)
+        src/FeatureDetector.cpp
+        src/ImageProcessor.cpp Analysis/Analyser.cpp)
 
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}

@@ -12,6 +12,8 @@
 #include <FrameDrawer.h>
 #include <MapDrawer.h>
 #include <LocalMapper.h>
+#include <Analyser.h>
+
 
 namespace SSLAM
 {

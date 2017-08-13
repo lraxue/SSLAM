@@ -54,6 +54,9 @@ namespace SSLAM
 
 		EpipolarTriangle* GenerateEpipolarTriangle(const int& idx) const;
 
+		// For debugging
+		void GenerateAllMapPoints();
+
         // Project corresponded point to 2D image
         cv::Point2f Project3DPointOnLeftImage(const int& idx) const;
 

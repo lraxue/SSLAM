@@ -157,7 +157,7 @@ namespace SSLAM
 
 		AssignFeaturesToGrid();
 
-        ComputeInitialReprojectionError();
+        // ComputeInitialReprojectionError();
         // ComputeNCCValues();  // Compute NCC values of each match
 
 
@@ -503,6 +503,20 @@ namespace SSLAM
 			return cv::Mat();
 	}
 
+    void Frame::GenerateAllMapPoints()
+    {
+        for (int i = 0; i < N; ++i)
+        {
+            if (mvMatches[i] < 0) continue;
+
+            MapPoint* pNewMP = new MapPoint(nullptr, *this, i);
+            cv::Mat x3Dw = UnprojectStereo(i);
+            pNewMP->SetPos(x3Dw);
+
+            mvpMapPoints[i] = pNewMP;
+        }
+    }
+
 	EpipolarTriangle* Frame::GenerateEpipolarTriangle(const int &idx) const
     {
         if (idx < 0 || idx >= N)   // out of range
@@ -513,7 +527,6 @@ namespace SSLAM
         const float& ResponseRight = mvKeysRight[idx].response / 255.f;
         const float& MatchCost = mvMatchCosts[idx];
 
-        EpipolarTriangle::SUncertainty sUncertainty(ResponseLeft, ResponseRight, MatchCost);
         // Vertexes
         cv::Mat Cl = (cv::Mat_<float>(3, 1) << 0.f, 0.f, 0.f);
         cv::Mat Cr = (cv::Mat_<float>(3, 1) << mb, 0.f, 0.f);
@@ -527,9 +540,13 @@ namespace SSLAM
 
         cv::Mat x3Dc = (cv::Mat_<float>(3, 1) << x, y, z);
 
-        EpipolarTriangle* pNewET =
-                new EpipolarTriangle(mnId, x3Dc, Cl, Cr, sUncertainty);   // EpipolarTriangle in current camera coordinate
+//        EpipolarTriangle* pNewET =
+//                new EpipolarTriangle(mnId, x3Dc, Cl, Cr, sUncertainty);   // EpipolarTriangle in current camera coordinate
 
+        EpipolarTriangle* pNewET =
+                new EpipolarTriangle(mnId, x3Dc, Cl, Cr,
+                mvKeysLeft[idx], mvKeysRight[mvMatches[idx]],
+                mvDepth[idx], mvuRight[idx]);
         return pNewET;
     }
 

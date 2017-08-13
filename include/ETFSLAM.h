@@ -23,6 +23,8 @@ using namespace std;
 namespace SSLAM
 {
 
+    class Frame;
+
     class ETFSLAM
     {
     public:
@@ -39,6 +41,11 @@ namespace SSLAM
         void SaveTrajectoryKITTI(const std::string& strTrajectoryFile);
 
     public:
+        void GenerateFrame(const cv::Mat& imLeft, const cv::Mat& imRight);
+
+        // Load groundtruth
+        void LoadGroundTruthKitti(const std::string& filename);
+
         /// Debugging functions
         void SaveAngleCorrespondedToOneMapPoint(const std::string& strAngleFile);
 
@@ -57,6 +64,11 @@ namespace SSLAM
 
         Map* mpMap;
 
+
+        // Ground truth
+        std::vector<cv::Mat> mvTcws;
+
+        std::vector<Frame> mvFrames;
 
         thread* ptrViewerThread;
 

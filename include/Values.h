@@ -16,13 +16,15 @@ namespace SSLAM {
 
     // KITTI dataset
     const string strSettingFileKitti00_02 = "Stereo/KITTI00-02.yaml";
-    const string strImagePathKITTI00 = "/home/feixue/Research/Dataset/dataset/sequences/00/";
+    const string strImagePathKITTI00 = "/home/feixue/Research/Dataset/Kitti/dataset/sequences/00/";
 
     const string strSettingFileKitti03 = "Stereo/KITTI03.yaml";
-    const string strImagePathKITTI03 = "/home/feixue/Research/Dataset/dataset/sequences/03/";
+    const string strImagePathKITTI03 = "/home/feixue/Research/Dataset/Kitti/dataset/sequences/03/";
 
     const string strSettingFileKitti04 = "Stereo/KITTI04-12.yaml";
-    const string strImagePathKITTI04 = "/home/feixue/Research/Dataset/dataset/sequences/04/";
+    const string strImagePathKITTI04 = "/home/feixue/Research/Dataset/Kitti/dataset/sequences/04/";
+
+    const string strGTFileKitti00 = "/home/feixue/Research/Dataset/Kitti/dataset/poses/00.txt";
 }
 
 #endif //SSLAM_VALUES_H
