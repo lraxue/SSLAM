@@ -99,10 +99,16 @@ namespace SSLAM
 
     void ETFSLAM::GenerateFrame(const cv::Mat &imLeft, const cv::Mat &imRight)
     {
-        Frame frame = Frame(imLeft, imRight);
-        frame.SetPose(mvTcws[frame.mnId]);
-        frame.GenerateAllMapPoints();
-        mvFrames.push_back(frame);
+        mCurrentFrame = Frame(imLeft, imRight);
+        mCurrentFrame.SetPose(mvTcws[mCurrentFrame.mnId]);
+        mCurrentFrame.GenerateAllMapPoints();
+
+        if (mCurrentFrame.mnId > 0)
+        {
+            analyser.Analize(mLastFrame, mCurrentFrame);
+        }
+
+        mLastFrame = Frame(mCurrentFrame);
     }
 
     void ETFSLAM::LoadGroundTruthKitti(const std::string &filename)

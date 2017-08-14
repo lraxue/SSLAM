@@ -7,17 +7,16 @@
 #include <ORBmatcher.h>
 #include <fstream>
 #include <glog/logging.h>
+#include <include/Monitor.h>
 
 namespace SSLAM
 {
     Analyser::Analyser()
     {
-
     }
 
     Analyser::~Analyser()
     {
-
     }
 
     void Analyser::Analize(const std::vector<Frame> &vFrames)
@@ -27,10 +26,16 @@ namespace SSLAM
 
         for (int i = 1; i < nFrames; ++i)
         {
-            std::vector<SRepError> vRepErrors = ComputeReprojectionError(vFrames[i - 1], vFrames[i], 15);
+            std::vector<SRepError> vRepErrors = ComputeReprojectionError(vFrames[i - 1], vFrames[i], 5);
             WriteToFile(filename, vRepErrors);
-
         }
+    }
+
+    void Analyser::Analize(const Frame &lastFrame, const Frame &currentFrame)
+    {
+        const std::string filename = "error.txt";
+        std::vector<SRepError> vRepErrors = ComputeReprojectionError(lastFrame, currentFrame, 5);
+        WriteToFile(filename, vRepErrors);
     }
 
     std::vector<SRepError> Analyser::ComputeReprojectionError(const Frame &lastFrame, const Frame &currentFrame, const float& th)
@@ -40,7 +45,7 @@ namespace SSLAM
         // First, search matches between two frames
         int nmatches = 0;
 
-        bool mbCheckOrientation = false;
+        bool mbCheckOrientation = true;
 
         // Rotation Histogram (to check rotation consistency)
         std::vector<int> rotHist[ORBmatcher::HISTO_LENGTH];
@@ -186,7 +191,7 @@ namespace SSLAM
         }
 
         ORBmatcher matcher;
-        /*
+
         //Apply rotation consistency
         if (mbCheckOrientation)
         {
@@ -202,13 +207,53 @@ namespace SSLAM
                 {
                     for (size_t j = 0, jend = rotHist[i].size(); j < jend; j++)
                     {
-                        currentFrame.mvpMapPoints[rotHist[i][j]] = static_cast<MapPoint *>(NULL);
+//                        currentFrame.mvpMapPoints[rotHist[i][j]] = static_cast<MapPoint *>(NULL);
+
+                        for (auto& pair : vMatches)
+                        {
+                            if (pair.second == rotHist[i][j])
+                                pair.second = -1;
+                        }
+
                         nmatches--;
 
                     }
                 }
             }
-        }*/
+        }
+
+        /*
+        std::vector<cv::Point2f> vRawPoints;
+        std::vector<cv::Point2f> vReproPoints;
+        for (int i = 0; i < lastFrame.N; ++i)
+        {
+            MapPoint* pMP = lastFrame.mvpMapPoints[i];
+            if (!pMP) continue;
+
+            cv::Mat x3Dw = pMP->GetPos();
+            cv::Mat x3Dc = currentFrame.mRcw * x3Dw + currentFrame.mtcw;
+
+            const float xc = x3Dc.at<float>(0);
+            const float yc = x3Dc.at<float>(1);
+            const float invzc = 1.0 / x3Dc.at<float>(2);
+
+            if (invzc < 0)
+                continue;
+
+            float u = fx * xc * invzc + cx;
+            float v = fy * yc * invzc + cy;
+
+            vRawPoints.push_back(lastFrame.mvKeysLeft[i].pt);
+            vReproPoints.push_back(cv::Point2f(u, v));
+        }
+
+        cv::Mat out1, out2;
+        Monitor::DrawKeyPoints(lastFrame.mRGBLeft, vRawPoints, cv::Scalar(0, 0, 255), out1);
+        Monitor::DrawKeyPoints(out1, vReproPoints, cv::Scalar(0, 255, 0), out2);
+        cv::imshow("out1", out1);
+        cv::imshow("out2", out2);
+        cv::waitKey(0);
+        */
 
 
         // Second, compute reprojection error
@@ -223,6 +268,10 @@ namespace SSLAM
 
         const int ImgWidth = lastFrame.mnImgWidth;
         const int ImgHeight = lastFrame.mnImgHeight;
+
+        int nValidPoints = 0;
+        std::vector<cv::KeyPoint> vMatchedKeysLeft;
+        std::vector<cv::KeyPoint> vMatchedKeysRight;
 
         for (auto match : vMatches)
         {
@@ -270,14 +319,31 @@ namespace SSLAM
 
             vRepErrors.push_back(repError);
 
+            nValidPoints++;
+//            vMatchedKeysLeft.push_back(lastFrame.mvKeysLeft[idx1]);
+//            vMatchedKeysRight.push_back(currentFrame.mvKeysLeft[idx2]);
         }
+
+
+        LOG(INFO) << "In Frame " << lastFrame.mnId << " ," << nValidPoints << " valid points in total.";
+
+        /*
+
+        cv::Mat mMatchedImg;
+        Monitor::DrawMatchesBetweenTwoImages(lastFrame.mRGBLeft, currentFrame.mRGBLeft,
+                                             vMatchedKeysLeft, vMatchedKeysRight,
+                                             mMatchedImg, false);
+
+        cv::imshow("matched img", mMatchedImg);
+        cv::waitKey(0);
+        */
 
         return vRepErrors;
     }
 
     void Analyser::WriteToFile(const std::string& fileName, std::vector<SRepError>& vRepErrors)
     {
-        std::fstream file(fileName.c_str());
+        std::fstream file(fileName.c_str(), std::ios::app);
 
         if (!file.is_open())
         {

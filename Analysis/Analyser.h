@@ -92,6 +92,8 @@ namespace SSLAM
 
         void Analize(const std::vector<Frame>& vFrames);
 
+        void Analize(const Frame& lastFrame, const Frame& currentFrame);
+
         std::vector<SRepError> ComputeReprojectionError(const Frame& lastFrame, const Frame& currentFrame, const float& th = 5);
 
         void WriteToFile(const std::string& fileName, std::vector<SRepError>& vRepErrors);

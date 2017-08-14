@@ -70,6 +70,11 @@ namespace SSLAM
 
         std::vector<Frame> mvFrames;
 
+        Frame mCurrentFrame;
+        Frame mLastFrame;
+
+        Analyser analyser;
+
         thread* ptrViewerThread;
 
 

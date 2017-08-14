@@ -36,9 +36,8 @@ int main() {
     LOG(INFO) << "Number of images: " << nImages;
 
     // sleep(20);
-    const std::string path = "/home/feixue/Research/Dataset/Stereo/Adirondack-perfect/";
     int startIdx = 0;
-    int endIdx = 900;
+    int endIdx = nImages;
     int step = 1;
     for (int i = startIdx; i < endIdx; i += step)
     {
@@ -61,11 +60,11 @@ int main() {
         cout << endl << endl;
     }
 
-    Analyser analyser;
-    analyser.Analize(slam.mvFrames);
-
-    slam.SaveTrajectoryKITTI("Files/trajectory-pku-desk-100.txt");
-    slam.SaveAngleCorrespondedToOneMapPoint("Files/angle-pku-desk-100.txt");
+//    Analyser analyser;
+//    analyser.Analize(slam.mvFrames);
+//
+//    slam.SaveTrajectoryKITTI("Files/trajectory-pku-desk-100.txt");
+//    slam.SaveAngleCorrespondedToOneMapPoint("Files/angle-pku-desk-100.txt");
 
     slam.Shutdown();
 
